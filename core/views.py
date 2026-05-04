@@ -4,7 +4,7 @@ from django.conf import settings
 from .models import Servicio, SolicitudInformacion, Presupuesto
 from .forms import SolicitarInfoForm
 from django.http import HttpResponse
-
+from django.shortcuts import redirect
 def test_storage(request):
     return HttpResponse(settings.DEFAULT_FILE_STORAGE)
 # ----------------------------
@@ -84,6 +84,7 @@ def solicitar_info(request, servicio_id):
 # VISTA SEGUIMIENTO (por código)
 # ----------------------------
 def seguimiento(request, codigo):
+    codigo = codigo.strip()
     solicitud = get_object_or_404(SolicitudInformacion, codigo_seguimiento=codigo)
 
     estado_map = {
@@ -94,9 +95,9 @@ def seguimiento(request, codigo):
         'aceptada': 5,
         'pago_final': 6
     }
-    estado_num = estado_map.get(solicitud.estado, 0)
 
-    presupuesto = getattr(solicitud, 'presupuesto', None)  # None si no existe
+    estado_num = estado_map.get(solicitud.estado, 0)
+    presupuesto = getattr(solicitud, 'presupuesto', None)
 
     return render(request, "seguimiento.html", {
         "solicitud": solicitud,
@@ -104,17 +105,15 @@ def seguimiento(request, codigo):
         "presupuesto": presupuesto
     })
 
-
 # ----------------------------
 # VISTA INTERMEDIA PARA FORMULARIO DE SEGUIMIENTO
 # ----------------------------
 def seguimiento_base(request):
-    """
-    Recibe el código del formulario de inicio y redirige a la URL de seguimiento con código.
-    """
-    codigo = request.GET.get('codigo')
+    codigo = request.GET.get('codigo', '').strip()
+
     if codigo:
         return redirect('seguimiento', codigo=codigo)
+
     return redirect('inicio')
 def aprobar_solicitud(request, codigo):
     solicitud = get_object_or_404(SolicitudInformacion, codigo_seguimiento=codigo)

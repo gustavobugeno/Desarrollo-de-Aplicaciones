@@ -19,8 +19,8 @@ urlpatterns = [
     path('gracias/', views.gracias, name='gracias'),
 
     # Seguimiento
-    path("seguimiento/<str:codigo>/", views.seguimiento, name="seguimiento"),
     path("seguimiento/", views.seguimiento_base, name="seguimiento_base"),
+    path("seguimiento/<str:codigo>/", views.seguimiento, name="seguimiento"),
 
     path('seguimiento/<str:codigo>/aprobar/', views.aprobar_solicitud, name='aprobar_solicitud'),
     path('seguimiento/<str:codigo>/rechazar/', views.rechazar_solicitud, name='rechazar_solicitud'),

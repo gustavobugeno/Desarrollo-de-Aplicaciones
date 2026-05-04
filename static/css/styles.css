@@ -186,3 +186,21 @@ h2, h1 {
   height: 210px;
   object-fit: cover;
 }
+
+form input,
+form textarea,
+form select {
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 14px;
+  background-color: #ffffff;
+}
+
+form textarea {
+  min-height: 160px;
+}
+
+.form-label {
+  color: #111827;
+}
