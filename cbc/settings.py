@@ -153,8 +153,6 @@ STATICFILES_DIRS = [
 # Carpeta donde Django colocará los estáticos para producción
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# WhiteNoise para servir los estáticos en producción
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
