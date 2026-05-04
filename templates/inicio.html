@@ -1,3 +1,7 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,23 +14,6 @@
   <link rel="stylesheet" href="./static/css/styles.css">
 </head>
 <body>
-  <!-- NAVBAR -->
-  <nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container-fluid px-4">
-      <a class="navbar-brand" href="#servicios">CBC E.I.R.L</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
-          <li class="nav-item"><a class="nav-link" href="servicios.html">Servicios</a></li>
-          <li class="nav-item"><a class="nav-link" href="contacto.html">Contacto</a></li>
-          <li class="nav-item"><a class="nav-link" href="/admin">Admin</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
 
   <!-- SECCIÓN PRINCIPAL: Contenido -->
   <div class="container mt-5" id="servicios">
@@ -118,3 +105,4 @@
   <script src="./static/js/scripts.js"></script>
 </body>
 </html>
+{% endblock %}

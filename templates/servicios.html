@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-12 text-center mb-4">
+    <h1 class="fw-bold" style="font-size: 2.8rem; letter-spacing: -1px;">
+      Nuestros Servicios
+    </h1>
+  </div>
+</div>
+
+<div class="row gy-4">
+  {% for servicio in servicios %}
+    <div class="col-lg-4 col-md-6">
+      <div class="card h-100 service-card shadow-sm">
+
+        {% if servicio.imagen %}
+          <img src="{{ servicio.imagen.url }}" class="card-img-top img-servicio-card" alt="{{ servicio.titulo }}">
+        {% endif %}
+
+        <div class="card-body">
+          <h3 class="card-title mb-3">{{ servicio.titulo }}</h3>
+
+          <p class="card-text mb-4">
+            {{ servicio.descripcion }}
+          </p>
+
+          <a href="{% url 'solicitar_info' servicio.id %}" class="btn btn-warning service-button">
+            Solicitar información
+          </a>
+        </div>
+
+      </div>
+    </div>
+  {% empty %}
+    <div class="col-12 text-center">
+      <p>No hay servicios disponibles por ahora.</p>
+    </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
