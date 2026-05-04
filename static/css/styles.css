@@ -210,6 +210,36 @@ h3 {
   transform: translateY(0);
 }
 
+.service-button {
+  display: block;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 40px;
+  background: linear-gradient(135deg, #ff8c00, #ff5a00);
+  color: #ffffff;
+  box-shadow: 0 16px 30px rgba(255, 138, 0, 0.28);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+
+.service-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 35px rgba(255, 138, 0, 0.35);
+  background: linear-gradient(135deg, #ff9a16, #ff6b17);
+}
+
+.service-card .card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.service-card .card-text {
+  flex-grow: 1;
+}
+
 /* ============================================
    SECCIÓN "¿POR QUÉ ELEGIR CBC?"
    ============================================ */
