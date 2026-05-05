@@ -3,10 +3,7 @@ import string
 from django.db import models
 from django.core.validators import RegexValidator
 
-from cloudinary_storage.storage import (
-    MediaCloudinaryStorage,
-    RawMediaCloudinaryStorage
-)
+
 
 def generar_codigo():
     año = "2025"
@@ -19,11 +16,8 @@ class Servicio(models.Model):
     descripcion = models.TextField("Descripción", blank=True, null=True)
 
     imagen = models.ImageField(
-        upload_to='servicios/',
-        storage=MediaCloudinaryStorage(),
-        blank=True,
-        null=True
-    )
+    upload_to='servicios/imagenes_extra/'
+)
 
     def __str__(self):
         return self.titulo
@@ -92,9 +86,8 @@ class ImagenServicio(models.Model):
         Servicio, related_name='imagenes_extra', on_delete=models.CASCADE
     )
     imagen = models.ImageField(
-        upload_to='servicios/imagenes_extra/',
-        storage=MediaCloudinaryStorage()
-    )
+    upload_to='servicios/imagenes_extra/'
+)
 
     def __str__(self):
         return f"Imagen de {self.servicio.titulo}"
@@ -108,9 +101,8 @@ class Presupuesto(models.Model):
     )
 
     archivo = models.FileField(
-        upload_to='presupuestos/',
-        storage=RawMediaCloudinaryStorage()
-    )
+    upload_to='presupuestos/'
+)
 
     fecha = models.DateField(auto_now_add=True)
     total = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
