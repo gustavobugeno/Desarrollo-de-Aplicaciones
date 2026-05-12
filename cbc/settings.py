@@ -77,8 +77,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core',
     'csp',
-    #'cloudinary',
-    #'cloudinary_storage',
+    'cloudinary',
+    'cloudinary_storage',
 
 ]
 
@@ -178,7 +178,7 @@ CLOUDINARY_STORAGE = {
 if ENVIRONMENT == 'production':
     STORAGES = {
         "default": {
-            "BACKEND": "django.core.files.storage.FileSystemStorage",
+            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
         },
         "staticfiles": {
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
