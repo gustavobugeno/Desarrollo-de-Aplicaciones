@@ -20,11 +20,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 🔥 FORZAR LOCAL (SOLUCIÓN DEFINITIVA)
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 # Detectar entorno: 'production' o 'development'
-ENVIRONMENT = 'development'
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
 
 # Llave secreta (debe cambiar en producción)
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-v$qd+8ub@3d*bngu4ez@#sh67713=%y$uc3)ac4qumks9*q+=')
-
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', os.getenv('SECRET_KEY'))
 # Debug sólo en desarrollo
 DEBUG = ENVIRONMENT != 'production'
 
