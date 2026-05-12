@@ -23,15 +23,21 @@ nav.navbar .navbar-brand {
   letter-spacing: 1px;
 }
 
-nav.navbar .navbar-nav .nav-link {
+nav.navbar .navbar-nav .nav-link,
+nav.navbar .navbar-nav .nav-link:visited,
+nav.navbar .navbar-nav .nav-link.active {
   color: #ffffff !important;
   font-weight: 600;
   margin-left: 20px;
   font-size: 1.1rem;
+  transition: color 0.2s ease;
 }
 
-nav.navbar .navbar-nav .nav-link:hover {
-  color: #ffc107 !important;
+nav.navbar .navbar-nav .nav-link:hover,
+nav.navbar .navbar-nav .nav-link:focus,
+nav.navbar .navbar-nav .nav-link.active:hover,
+nav.navbar .navbar-nav .nav-link.active:focus {
+  color: #3055f6 !important;
 }
 
 /* =========================

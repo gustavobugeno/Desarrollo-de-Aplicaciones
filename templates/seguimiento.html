@@ -1,114 +1,179 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/seguimiento.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-
-    <h2 class="text-center mb-4">Seguimiento de tu solicitud</h2>
-    <p class="text-center">Código: <strong>{{ solicitud.codigo_seguimiento }}</strong></p>
-    <p class="text-center">Estado actual: <strong>{{ solicitud.get_estado_display }}</strong></p>
-
-    <h4 class="mt-4">Información del cliente</h4>
-    <ul>
-        <li><strong>Nombre:</strong> {{ solicitud.nombre }}</li>
-        <li><strong>Email:</strong> {{ solicitud.email }}</li>
-        <li><strong>Teléfono:</strong> {{ solicitud.telefono }}</li>
-    </ul>
-
-    <h4 class="mt-4">Detalles del proyecto</h4>
-    <ul>
-        <li><strong>Servicio:</strong> {{ solicitud.servicio.titulo }}</li>
-        <li><strong>Requerimientos:</strong> {{ solicitud.requerimientos }}</li>
-    </ul>
-
-    <h4 class="mt-4">Progreso</h4>
-    <div class="d-flex justify-content-center align-items-center mt-3 flex-wrap">
-
-        <!-- Paso 1 -->
-        <div class="text-center mx-2">
-            <div class="p-3 border rounded {% if estado >= 1 %}bg-success text-white{% else %}bg-light{% endif %}">
-                <strong>1. Solicitud recibida</strong>
-                <p class="small">Hemos recibido tu información.</p>
-            </div>
-        </div>
-        <div class="mx-2 display-6 fw-bold">→</div>
-
-        <!-- Paso 2 -->
-        <div class="text-center mx-2">
-            <div class="p-3 border rounded {% if estado >= 2 %}bg-success text-white{% else %}bg-light{% endif %}">
-                <strong>2. Asignación de experto</strong>
-                <p class="small">Se coordina visita o llamada.</p>
-            </div>
-        </div>
-        <div class="mx-2 display-6 fw-bold">→</div>
-
-<!-- Paso 3 -->
-<div class="text-center mx-2">
-    <div class="p-3 border rounded {% if estado >= 3 %}bg-success text-white{% else %}bg-light{% endif %}">
-        <strong>3. Creación de cotización</strong>
-        <p class="small">El experto prepara tu propuesta.</p>
+<div class="tracking-container">
+  <!-- HEADER -->
+  <div class="tracking-header">
+    <h1 style="font-size: clamp(2rem, 4vw, 2.8rem); color: #171c35; margin-bottom: 1rem;">Seguimiento de tu Solicitud</h1>
+    
+    <div class="tracking-code">
+      <div class="code-label">Código de seguimiento</div>
+      <div class="code-value">{{ solicitud.codigo_seguimiento }}</div>
+      <div class="status-badge {% if estado >= 5 %}completed{% elif estado >= 2 %}in-progress{% else %}pending{% endif %}">
+        {{ solicitud.get_estado_display }}
+      </div>
     </div>
-</div>
-<div class="mx-2 display-6 fw-bold">→</div>
+  </div>
 
-<!-- Paso 4 -->
-<div class="text-center mx-2">
-    <div class="p-3 border rounded {% if estado >= 4 %}bg-success text-white{% else %}bg-light{% endif %}">
-        <strong>4. Envío al cliente</strong>
-        <p class="small">Recibirás un correo con la cotización.</p>
-
-        {% if presupuesto %}
-        <a href="{{ presupuesto.archivo.url }}" class="btn btn-outline-light mt-2" target="_blank">
-            Ver Presupuesto
-        </a>
-        {% endif %}
+  <!-- INFORMACIÓN DEL CLIENTE -->
+  <div class="client-info">
+    <h4>Información del Cliente</h4>
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">👤 Nombre</div>
+        <div class="info-value">{{ solicitud.nombre }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">📧 Email</div>
+        <div class="info-value">{{ solicitud.email }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">📞 Teléfono</div>
+        <div class="info-value">{{ solicitud.telefono }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">🔧 Servicio</div>
+        <div class="info-value">{{ solicitud.servicio.titulo }}</div>
+      </div>
     </div>
-</div>
-<div class="mx-2 display-6 fw-bold">→</div>
-<!-- Paso 5 -->
-<div class="text-center mx-2">
-    <div class="p-3 border rounded {% if estado >= 5 %}bg-success text-white{% else %}bg-light{% endif %}">
-        <strong>5. Aceptación o ajustes</strong>
-        <p class="small">Elige una opción para continuar con tu solicitud.</p>
+  </div>
 
-        {% if estado == 4 or estado == 5 %}
-        <div class="mt-2 d-flex justify-content-center gap-2">
-            <a href="{% url 'aprobar_solicitud' solicitud.codigo_seguimiento %}" class="btn btn-success">
-                Aprobar
+  <!-- INFORMACIÓN DEL PROYECTO -->
+  <div class="client-info">
+    <h4>Detalles del Proyecto</h4>
+    <div class="info-grid">
+      <div class="info-item" style="grid-column: 1 / -1;">
+        <div class="info-label">📝 Requerimientos</div>
+        <div class="info-value">{{ solicitud.requerimientos }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESO -->
+  <div class="progress-section">
+    <h4 class="progress-title">Progreso del Proyecto</h4>
+    
+    <div class="progress-timeline">
+      <!-- Paso 1 -->
+      <div class="progress-step" data-paso="1" data-estado="{{ estado }}">
+        <div style="position: relative;">
+          <div class="step-indicator">1</div>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-title">Solicitud Recibida</div>
+          <div class="step-description">Hemos recibido tu información y la estamos procesando.</div>
+        </div>
+      </div>
+
+      <!-- Paso 2 -->
+      <div class="progress-step" data-paso="2" data-estado="{{ estado }}">
+        <div style="position: relative;">
+          <div class="step-indicator">2</div>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-title">Asignación de Experto</div>
+          <div class="step-description">Se está coordinando una visita o llamada con nuestro especialista.</div>
+        </div>
+      </div>
+
+      <!-- Paso 3 -->
+      <div class="progress-step" data-paso="3" data-estado="{{ estado }}">
+        <div style="position: relative;">
+          <div class="step-indicator">3</div>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-title">Creación de Cotización</div>
+          <div class="step-description">Nuestro experto está preparando tu propuesta personalizada.</div>
+        </div>
+      </div>
+
+      <!-- Paso 4 -->
+      <div class="progress-step" data-paso="4" data-estado="{{ estado }}">
+        <div style="position: relative;">
+          <div class="step-indicator">4</div>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-title">Envío de Presupuesto</div>
+          <div class="step-description">Recibirás tu cotización por correo electrónico.</div>
+          {% if presupuesto %}
+          <div class="step-actions">
+            <a href="{{ presupuesto.archivo.url }}" target="_blank" class="step-btn step-btn-primary">
+              📥 Descargar Presupuesto
             </a>
-            <a href="{% url 'rechazar_solicitud' solicitud.codigo_seguimiento %}" class="btn btn-danger">
-                Rechazar
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Paso 5 -->
+      <div class="progress-step" data-paso="5" data-estado="{{ estado }}">
+        <div style="position: relative;">
+          <div class="step-indicator">5</div>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-title">Decisión del Cliente</div>
+          <div class="step-description">Puedes aceptar, rechazar o solicitar ajustes a la propuesta.</div>
+          {% if estado == 4 or estado == 5 %}
+          <div class="step-actions">
+            <a href="{% url 'aprobar_solicitud' solicitud.codigo_seguimiento %}" class="step-btn step-btn-success">
+              ✓ Aprobar Propuesta
             </a>
-            <button id="btn-solicitar-cambios" class="btn btn-warning text-white">
-                Solicitar cambios
+            <a href="{% url 'rechazar_solicitud' solicitud.codigo_seguimiento %}" class="step-btn step-btn-danger">
+              ✗ Rechazar
+            </a>
+            <button id="btn-solicitar-cambios" type="button" class="step-btn step-btn-secondary">
+              ⚙️ Solicitar Cambios
             </button>
-        </div>
+          </div>
 
-        <!-- Formulario de comentarios oculto -->
-        <div id="form-cambios" class="mt-3" style="display:none;">
+          <!-- Formulario de cambios -->
+          <div id="form-cambios" class="changes-form" style="display:none;">
             <form method="post" action="{% url 'solicitar_cambios' solicitud.codigo_seguimiento %}">
-                {% csrf_token %}
-                <textarea name="comentarios" class="form-control" rows="4" placeholder="Describe los cambios que deseas...">{{ solicitud.comentarios_cambios }}</textarea>
-                <button type="submit" class="btn btn-warning mt-2">Enviar cambios</button>
+              {% csrf_token %}
+              <textarea name="comentarios" placeholder="Describe los cambios que deseas..." required>{{ solicitud.comentarios_cambios }}</textarea>
+              <button type="submit" class="step-btn step-btn-primary" style="margin-top: 0.8rem; width: 100%;">
+                📤 Enviar Solicitud de Cambios
+              </button>
             </form>
+          </div>
+          {% endif %}
         </div>
-        {% endif %}
-    </div>
-</div>
+      </div>
 
-        <!-- Paso 6 -->
-        <div class="text-center mx-2">
-            <div class="p-3 border rounded {% if estado >= 6 %}bg-success text-white{% else %}bg-light{% endif %}">
-                <strong>6. Pago final</strong>
-                <p class="small">Una vez aceptada, se realiza el pago.</p>
-            </div>
+      <!-- Paso 6 -->
+      <div class="progress-step" data-paso="6" data-estado="{{ estado }}">
+        <div style="position: relative;">
+          <div class="step-indicator">6</div>
+          <div class="step-connector" style="display: none;"></div>
         </div>
-
+        <div class="step-content">
+          <div class="step-title">Pago Final</div>
+          <div class="step-description">Una vez aceptada la propuesta, se procede con el pago del proyecto.</div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <p class="text-center mt-4">
-        Nos pondremos en contacto contigo pronto.  
-        ¡Gracias por confiar en <strong>CBC E.I.R.L.</strong>!
+  <!-- MENSAJE DE CIERRE -->
+  <div class="closing-message">
+    <p style="margin: 0; font-size: 1.05rem;">
+      Nos pondremos en contacto contigo pronto.<br>
+      ¡Gracias por confiar en <strong>CBC E.I.R.L.</strong>!
     </p>
-
+  </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/seguimiento.js' %}"></script>
 {% endblock %}

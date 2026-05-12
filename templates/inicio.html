@@ -1,100 +1,125 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/inicio.css' %}">
+{% endblock %}
+
 {% block content %}
 
-<div class="container mt-5" id="servicios">
+<div class="container mt-5">
 
-  <h2 class="text-center mb-4">Nuestros Servicios</h2>
+<div class="services-section">
 
-  <div class="row text-center gy-4">
+  <section id="servicios" aria-labelledby="servicios-heading">
+    <h2 id="servicios-heading" class="text-center mb-4">Nuestros Servicios</h2>
 
-    <div class="col-md-4">
-      <div class="card h-100 shadow-sm fade-in">
-        <div class="card-body">
-          <h3 class="card-title mb-3">🛠 Obras Civiles</h3>
-          <ul class="list-unstyled fs-5 text-start">
-            <li>Construcción de cimientos y bases sólidas</li>
-            <li>Levantamiento preciso de muros y tabiques</li>
-            <li>Pérgolas, quinchos y terrazas personalizadas</li>
-            <li>Revestimientos y terminaciones profesionales</li>
-          </ul>
-        </div>
+    <div class="row text-center gy-4">
+
+      <div class="col-md-4">
+        <article class="card h-100 shadow-sm inicio-fade" data-delay="0.10">
+          <div class="card-body">
+            <h3 class="card-title mb-3">🛠 Obras Civiles</h3>
+            <ul class="list-unstyled fs-5 text-start">
+              <li>Construcción de cimientos y bases sólidas</li>
+              <li>Levantamiento preciso de muros y tabiques</li>
+              <li>Pérgolas, quinchos y terrazas personalizadas</li>
+              <li>Revestimientos y terminaciones profesionales</li>
+            </ul>
+          </div>
+        </article>
       </div>
-    </div>
 
-    <div class="col-md-4">
-      <div class="card h-100 shadow-sm fade-in">
-        <div class="card-body">
-          <h3 class="card-title mb-3">🚚 Transporte</h3>
-          <ul class="list-unstyled fs-5 text-start">
-            <li>Traslado de maquinaria pesada con cuidado</li>
-            <li>Transporte seguro de materiales</li>
-            <li>Mudanzas y traslado de mobiliario</li>
-            <li>Gestión de contenedores y desechos</li>
-          </ul>
-        </div>
+      <div class="col-md-4">
+        <article class="card h-100 shadow-sm inicio-fade" data-delay="0.15">
+          <div class="card-body">
+            <h3 class="card-title mb-3">🚚 Transporte</h3>
+            <ul class="list-unstyled fs-5 text-start">
+              <li>Traslado de maquinaria pesada con cuidado</li>
+              <li>Transporte seguro de materiales</li>
+              <li>Mudanzas y traslado de mobiliario</li>
+              <li>Gestión de contenedores y desechos</li>
+            </ul>
+          </div>
+        </article>
       </div>
-    </div>
 
-    <div class="col-md-4">
-      <div class="card h-100 shadow-sm fade-in">
-        <div class="card-body">
-          <h3 class="card-title mb-3">🔧 Mantenimiento</h3>
-          <ul class="list-unstyled fs-5 text-start">
-            <li>Reparaciones estructurales confiables</li>
-            <li>Pintura y recubrimientos protectores duraderos</li>
-            <li>Mantenimiento de redes de agua y desagüe</li>
-            <li>Revisión y optimización de sistemas de climatización</li>
-          </ul>
-        </div>
+      <div class="col-md-4">
+        <article class="card h-100 shadow-sm inicio-fade" data-delay="0.20">
+          <div class="card-body">
+            <h3 class="card-title mb-3">🔧 Mantenimiento</h3>
+            <ul class="list-unstyled fs-5 text-start">
+              <li>Reparaciones estructurales confiables</li>
+              <li>Pintura y recubrimientos protectores duraderos</li>
+              <li>Mantenimiento de redes de agua y desagüe</li>
+              <li>Revisión y optimización de sistemas de climatización</li>
+            </ul>
+          </div>
+        </article>
       </div>
-    </div>
 
-  </div>
+    </div>
+  </section>
 
   <hr class="my-5">
 
-  <!-- SEGUIMIENTO -->
-  <div class="row justify-content-center mb-5">
-    <div class="col-md-6 text-center">
-      <h2 class="mb-3">🔍 Revisa tu código de seguimiento</h2>
+  <section id="seguimiento" aria-labelledby="seguimiento-heading">
+    <div class="card card-seguimiento border-0 p-4 p-md-5 shadow-sm mb-5">
+      <div class="row justify-content-center">
+        <div class="col-md-6 text-center inicio-fade" data-delay="0.22">
+          <h2 id="seguimiento-heading" class="mb-3">🔍 Revisa tu código de seguimiento</h2>
 
-      <!-- 🔥 FORM CORREGIDO -->
-      <form method="get" action="{% url 'seguimiento_base' %}">
-        <div class="input-group mb-3">
-          <input type="text" name="codigo" class="form-control" placeholder="Ingresa tu código" required>
-          <button class="btn btn-primary" type="submit">Revisar</button>
+          <form method="get" action="{% url 'seguimiento_base' %}">
+            <div class="input-group mb-3">
+              <label for="codigo" class="visually-hidden">Código de seguimiento</label>
+              <input id="codigo" type="search" name="codigo" class="form-control" placeholder="Ingresa tu código" required>
+              <button class="btn btn-primary" type="submit">Revisar</button>
+            </div>
+          </form>
+
+          <p class="text-muted">
+            Ingresa el código que recibiste para ver el estado de tu solicitud.
+          </p>
         </div>
-      </form>
-
-      <p class="text-muted">
-        Ingresa el código que recibiste para ver el estado de tu solicitud.
-      </p>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <!-- POR QUÉ ELEGIR -->
-  <div class="row justify-content-center">
-    <div class="col-md-8 text-center">
-      <h2 class="mb-3">¿Por qué elegir CBC E.I.R.L.?</h2>
+  <section id="porque-elegir" aria-labelledby="porque-elegir-heading">
+    <div class="card card-highlight border-0 p-4 p-md-5 shadow-sm mt-4">
+      <div class="row justify-content-center">
+        <div class="col-md-8 text-center inicio-fade" data-delay="0.25">
+          <h2 id="porque-elegir-heading" class="mb-3">¿Por qué elegir CBC E.I.R.L.?</h2>
 
-      <ul class="list-unstyled fs-5 mb-4">
-        <li>✔ Personal calificado y comprometido</li>
-        <li>✔ Materiales certificados y de calidad</li>
-        <li>✔ Cumplimiento estricto de plazos</li>
-        <li>✔ Atención personalizada y cercana</li>
-      </ul>
+          <ul class="list-unstyled fs-5 mb-4">
+            <li>Personal calificado y comprometido</li>
+            <li>Materiales certificados y de calidad</li>
+            <li>Cumplimiento estricto de plazos</li>
+            <li>Atención personalizada y cercana</li>
+          </ul>
 
-      <p class="fs-5">
-        ¿Quieres un presupuesto?
-        <a href="{% url 'contacto' %}" class="btn btn-primary px-4">
-          Contáctanos hoy
-        </a>
-      </p>
+          <div class="presupuesto-container text-center mt-4">
+            <p class="fs-5 mb-3">
+              ¿Quieres un presupuesto?
+            </p>
+            <a href="{% url 'contacto' %}" class="btn btn-primary px-5 py-3">
+              Contáctanos hoy
+            </a>
+            <p class="fs-6 text-muted mt-3">
+              y recibe un presupuesto sin compromiso
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
 
 </div>
 
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/inicio.js' %}"></script>
 {% endblock %}

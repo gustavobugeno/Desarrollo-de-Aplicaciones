@@ -1,7 +1,50 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/contacto.css' %}">
+{% endblock %}
+
 {% block content %}
-<h2>Contacto</h2>
-<p>📞 Teléfono: +56 99366 3702</p>
-<p>📧 Email: cb.bugueno@hotmail.com</p>
-<p>📍 Dirección: María Eugenia López 9772, Antofagasta</p>
+<section class="contact-page">
+  <div class="contact-card card fade-in-contact clickable-card" data-url="{% url 'inicio' %}">
+    <div class="card-body">
+      <div class="contact-header">
+        <h2 class="card-title">Contacto</h2>
+      </div>
+      
+      <div class="contact-info">
+        <div class="contact-item copy-card" data-copy="+56 99366 3702">
+          <span class="contact-icon">📞</span>
+          <div class="contact-text">
+            <strong>Teléfono</strong>
+            <span class="copy-value">+56 99366 3702</span>
+          </div>
+        </div>
+        <div class="contact-item copy-card" data-copy="cb.bugueno@hotmail.com">
+          <span class="contact-icon">✉️</span>
+          <div class="contact-text">
+            <strong>Email</strong>
+            <span class="copy-value">cb.bugueno@hotmail.com</span>
+          </div>
+        </div>
+        <div class="contact-item copy-card" data-copy="María Eugenia López 9772, Antofagasta">
+          <span class="contact-icon">📍</span>
+          <div class="contact-text">
+            <strong>Dirección</strong>
+            <span class="copy-value">María Eugenia López 9772, Antofagasta</span>
+          </div>
+        </div>
+      </div>
+      <div class="contact-actions">
+        <button id="contact-back" type="button" class="contact-btn">Volver a Inicio</button>
+      </div>
+      <div id="copy-toast" class="copy-toast hidden"></div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/contacto.js' %}"></script>
 {% endblock %}
