@@ -15,29 +15,23 @@ from dotenv import load_dotenv
 import os
 
 
+
 load_dotenv()  # carga variables desde .env local
+
 BASE_DIR = Path(__file__).resolve().parent.parent
-# 🔥 FORZAR LOCAL (SOLUCIÓN DEFINITIVA)
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-# Detectar entorno: 'production' o 'development'
+
+# Detectar entorno
 ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
 
-# Llave secreta (debe cambiar en producción)
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', os.getenv('SECRET_KEY'))
-# Debug sólo en desarrollo
+# Llave secreta
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', os.getenv('SECRET_KEY', 'clave-local-insegura'))
+
 DEBUG = ENVIRONMENT != 'production'
 
-# ALLOWED_HOSTS según entorno
 if ENVIRONMENT == 'production':
-    ALLOWED_HOSTS = os.getenv(
-        'ALLOWED_HOSTS',
-        '.onrender.com'
-    ).split(',')
+    ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '.onrender.com').split(',')
 else:
-    ALLOWED_HOSTS = os.getenv(
-        'ALLOWED_HOSTS',
-        '127.0.0.1,localhost'
-    ).split(',')
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '*']
 
 # CSRF (IMPORTANTE en producción)
 CSRF_TRUSTED_ORIGINS = [
@@ -76,7 +70,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
-    'csp',
     'cloudinary',
     'cloudinary_storage',
 
@@ -175,7 +168,7 @@ CLOUDINARY_STORAGE = {
     }
 }
 
-if ENVIRONMENT == 'production':
+if ENVIRONMENT == "production":
     STORAGES = {
         "default": {
             "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -194,9 +187,8 @@ else:
         },
     }
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # DESACTIVAR SMTP (Render NO permite conexiones SMTP)
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
