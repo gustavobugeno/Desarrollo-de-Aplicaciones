@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block styles %}
+<style>
+  .confirmation-container {
+    max-width: 600px;
+    margin: 3rem auto;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .success-icon {
+    width: 80px;
+    height: 80px;
+    background: #27ae60;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    font-size: 3rem;
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+  }
+
+  .confirmation-title {
+    color: #171c35;
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+  }
+
+  .confirmation-message {
+    color: #666;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  .confirmation-card {
+    background: white;
+    border: 2px solid #27ae60;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .confirmation-card h3 {
+    color: #171c35;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+  }
+
+  .confirmation-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .confirmation-item:last-child {
+    border-bottom: none;
+  }
+
+  .confirmation-label {
+    color: #666;
+    font-weight: 500;
+  }
+
+  .confirmation-value {
+    color: #171c35;
+    font-weight: bold;
+  }
+
+  .amount-box {
+    background: #e8f4f8;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+  }
+
+  .amount-label {
+    color: #666;
+    margin-bottom: 0.5rem;
+  }
+
+  .amount-value {
+    color: #171c35;
+    font-size: 2rem;
+    font-weight: bold;
+  }
+
+  .next-steps {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .next-steps h3 {
+    color: #171c35;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .step-item {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    text-align: left;
+  }
+
+  .step-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .step-number {
+    background: #171c35;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .step-content {
+    flex: 1;
+  }
+
+  .step-content p {
+    margin: 0;
+    color: #666;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-primary {
+    background: #171c35;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #0f1219;
+    box-shadow: 0 4px 12px rgba(23, 28, 53, 0.3);
+  }
+
+  .btn-secondary {
+    background: #e8f4f8;
+    color: #171c35;
+  }
+
+  .btn-secondary:hover {
+    background: #d0e8f0;
+  }
+
+  .confirmation-number {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    color: #856404;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confirmation-container">
+  <div class="success-icon">✓</div>
+
+  <h1 class="confirmation-title">¡Pago Final Completado!</h1>
+
+  <p class="confirmation-message">
+    Has pagado el saldo restante del 50% del trabajo.<br>
+    Gracias por completar el proceso y confiar en nuestro equipo.
+  </p>
+
+  <div class="confirmation-number">
+    Referencia de Pago: CBC-{{ solicitud.codigo_seguimiento }}-FINAL-{{ now|date:'YmdHis' }}
+  </div>
+
+  <div class="confirmation-card">
+    <h3>📋 Detalles del Pago</h3>
+    <div class="confirmation-item">
+      <span class="confirmation-label">Código de Seguimiento:</span>
+      <span class="confirmation-value">{{ solicitud.codigo_seguimiento }}</span>
+    </div>
+    <div class="confirmation-item">
+      <span class="confirmation-label">Cliente:</span>
+      <span class="confirmation-value">{{ solicitud.nombre }}</span>
+    </div>
+    <div class="confirmation-item">
+      <span class="confirmation-label">Servicio:</span>
+      <span class="confirmation-value">{{ solicitud.servicio.titulo }}</span>
+    </div>
+    <div class="confirmation-item">
+      <span class="confirmation-label">Email:</span>
+      <span class="confirmation-value">{{ solicitud.email }}</span>
+    </div>
+    <div class="confirmation-item">
+      <span class="confirmation-label">Estado:</span>
+      <span class="confirmation-value" style="color: #27ae60;">
+        ✓ Pago Final - Completado
+      </span>
+    </div>
+
+    {% if presupuesto and presupuesto.total %}
+    <div class="amount-box">
+      <div class="amount-label">Monto Pagado (50% Final)</div>
+      <div class="amount-value">${{ monto_final|floatformat:2 }}</div>
+      <p style="color: #666; font-size: 0.9rem; margin-top: 0.5rem; margin-bottom: 0;">
+        Presupuesto Total: ${{ presupuesto.total|floatformat:2 }}
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="next-steps">
+    <h3>📅 Próximos Pasos</h3>
+    <div class="step-item">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <p><strong>Revisión Final</strong> - Nuestro equipo confirmará la entrega final.</p>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <p><strong>Entrega del Trabajo</strong> - Se completará la entrega final del proyecto.</p>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <p><strong>Cerraremos el ciclo</strong> - Tu trabajo queda completamente finalizado.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="button-group">
+    <a href="{% url 'seguimiento' solicitud.codigo_seguimiento %}" class="btn btn-secondary">Ver Seguimiento</a>
+    <a href="{% url 'inicio' %}" class="btn btn-primary">Ir a Inicio</a>
+  </div>
+</div>
+{% endblock %}

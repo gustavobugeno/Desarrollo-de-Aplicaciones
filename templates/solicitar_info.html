@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="row justify-content-center mt-5">
+  <div class="col-lg-8">
+
+    <div class="card shadow-sm service-card p-4">
+      <h1 class="fw-bold mb-3">Solicitar información de servicio</h1>
+
+      <p class="text-muted mb-4">
+        Completa el formulario y nuestro equipo se pondrá en contacto para darte una cotización personalizada.
+      </p>
+
+      <form method="post">
+        {% csrf_token %}
+
+        {% if form.errors %}
+          <div class="alert alert-danger">
+            Revisa los campos del formulario.
+          </div>
+        {% endif %}
+
+        <div class="row g-3">
+          {% for field in form %}
+            <div class="{% if field.name == 'requerimientos' or field.name == 'mensaje' %}col-12{% else %}col-md-6{% endif %}">
+              <label class="form-label fw-bold">{{ field.label }}</label>
+              {{ field }}
+
+              {% for error in field.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 fw-bold py-3 mt-4">
+          Enviar solicitud
+        </button>
+
+        <a href="{% url 'servicios' %}" class="btn btn-outline-secondary w-100 mt-2">
+          Volver a Servicios
+        </a>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
