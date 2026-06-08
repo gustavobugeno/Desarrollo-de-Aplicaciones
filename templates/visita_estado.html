@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="card-title mb-3">Estado de tu visita</h1>
+          <p class="text-muted mb-4">Código de seguimiento: <strong>{{ visita.codigo }}</strong></p>
+
+          <div class="mb-4">
+            <h5>Rango preferido por ti</h5>
+            <p>{{ visita.fecha_inicio_preferido|date:"d/m/Y" }} - {{ visita.fecha_fin_preferido|date:"d/m/Y" }}</p>
+          </div>
+
+          <div class="mb-4">
+            <h5>Estado actual</h5>
+            <p class="fw-semibold">
+              {% if visita.estado == 'pendiente' %}
+                Pendiente de revisión por el administrador
+              {% elif visita.estado == 'propuesta' %}
+                El administrador propuso otra fecha
+              {% elif visita.estado == 'confirmada' %}
+                Fecha confirmada
+              {% elif visita.estado == 'rechazada' %}
+                Solicitud rechazada
+              {% endif %}
+            </p>
+          </div>
+
+          {% if visita.fecha_inicio_propuesta and visita.fecha_fin_propuesta %}
+            <div class="mb-4">
+              <h5>Fecha propuesta por el admin</h5>
+              <p>{{ visita.fecha_inicio_propuesta|date:"d/m/Y" }} - {{ visita.fecha_fin_propuesta|date:"d/m/Y" }}</p>
+            </div>
+          {% endif %}
+
+          {% if visita.observaciones %}
+            <div class="mb-4">
+              <h5>Observaciones</h5>
+              <p>{{ visita.observaciones }}</p>
+            </div>
+          {% endif %}
+
+          <div class="alert alert-info">
+            Usa este código para revisar el estado de tu visita más tarde.
+          </div>
+
+          <a href="{% url 'inicio' %}" class="btn btn-secondary">Volver al inicio</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

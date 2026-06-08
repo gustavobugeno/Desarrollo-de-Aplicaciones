@@ -1,7 +1,6 @@
-﻿import re
+import re
 from django import forms
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
 from .models import SolicitudInformacion, Modificacion, Presupuesto
 
 class SolicitarInfoForm(forms.ModelForm):
@@ -48,6 +47,7 @@ class SolicitarInfoForm(forms.ModelForm):
 class ModificacionForm(forms.ModelForm):
     class Meta:
         model = Modificacion
+        # Campos que el cliente puede completar; el admin propondrá el precio
         fields = [
             'motivo',
             'descripcion',
@@ -67,39 +67,11 @@ class ModificacionForm(forms.ModelForm):
         }
 
 
-class AgendarVisitaForm(forms.Form):
-    nombre = forms.CharField(
-        max_length=120,
-        label='Nombre completo',
-        widget=forms.TextInput(attrs={'placeholder': 'Tu nombre completo', 'class': 'form-control'})
-    )
-    rut = forms.CharField(
-        max_length=12,
-        label='RUT',
-        validators=[RegexValidator(regex=r'^\d{7,8}-[\dkK]$', message='Ingrese un RUT válido, por ejemplo 12345678-9')],
-        widget=forms.TextInput(attrs={'placeholder': '12.345.678-9', 'class': 'form-control'})
-    )
-    email = forms.EmailField(
-        label='Correo electrónico',
-        widget=forms.EmailInput(attrs={'placeholder': 'tu@correo.cl', 'class': 'form-control'})
-    )
-    fecha_inicio_preferido = forms.DateField(
-        label='Fecha de inicio preferida',
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
-    )
-    fecha_fin_preferido = forms.DateField(
-        label='Fecha de término preferida',
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
-    )
-    telefono = forms.CharField(
-        max_length=12,
-        label='Número telefónico',
-        widget=forms.TextInput(attrs={'placeholder': '56912345678', 'class': 'form-control'})
-    )
-
-
+# -----------------------------------
+# WIDGET Y FIELD PARA PESOS CHILENOS
+# -----------------------------------
 class PesosChilenosWidget(forms.TextInput):
-    """Widget que acepta formato de pesos chilenos (300.000, 1.500.000, etc)"""
+    """Widget que acepta formato de pesos chilenos (300.000, 1.500.000, etc) y lo convierte a número decimal"""
     
     def __init__(self, attrs=None):
         default_attrs = {'placeholder': 'ej: 300.000 o 1.500.000 o 1.500.000,50'}
@@ -109,10 +81,11 @@ class PesosChilenosWidget(forms.TextInput):
 
 
 class PesosChilenosField(forms.DecimalField):
-    """Campo que acepta números con puntos como separador de miles"""
+    """Campo que acepta números con puntos como separador de miles (300.000, 1.500.000, etc)"""
     
     def __init__(self, *args, **kwargs):
         kwargs['widget'] = PesosChilenosWidget()
+        # Asegurar que acepta números grandes (hasta 9.999.999.999,99)
         kwargs.setdefault('max_digits', 12)
         kwargs.setdefault('decimal_places', 2)
         super().__init__(*args, **kwargs)
@@ -137,16 +110,18 @@ class PesosChilenosField(forms.DecimalField):
             elif '.' in value:
                 integer_part, decimal_part = value.rsplit('.', 1)
                 if len(decimal_part) == 3:
-                    # 300.000 -> miles
                     value = value.replace('.', '')
                 else:
-                    # 300000.00 -> separador decimal
                     value = value.replace(',', '')
-            
+
         return super().to_python(value)
 
 
+# -----------------------------------
+# FORMULARIOS PARA EL ADMIN
+# -----------------------------------
 class PresupuestoForm(forms.ModelForm):
+    """Formulario para editar presupuestos en el admin con formato de pesos chilenos"""
     total = PesosChilenosField(required=False, label="Total (ej: 300.000)")
     
     class Meta:
@@ -155,6 +130,7 @@ class PresupuestoForm(forms.ModelForm):
 
 
 class ModificacionAdminForm(forms.ModelForm):
+    """Formulario para editar modificaciones en el admin con formato de pesos chilenos"""
     monto_adicional = PesosChilenosField(required=False, label="Monto Adicional (ej: 50.000)")
     admin_monto_propuesto = PesosChilenosField(required=False, label="Monto Propuesto (ej: 100.000)")
     

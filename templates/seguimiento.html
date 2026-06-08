@@ -1,28 +1,57 @@
 {% extends "base.html" %}
 {% load static %}
+{% load formato_chileno %}
 
 {% block styles %}
-<link rel="stylesheet" href="{% static 'css/seguimiento.css' %}">
+  <!-- Estilos de la página de seguimiento -->
+  <link rel="stylesheet" href="{% static 'css/seguimiento.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="tracking-container">
   <!-- HEADER -->
   <div class="tracking-header">
-    <h1 style="font-size: clamp(2rem, 4vw, 2.8rem); color: #171c35; margin-bottom: 1rem;">Seguimiento de tu Solicitud</h1>
+    <h1 class="page-title">Seguimiento de tu Solicitud</h1>
     
     <div class="tracking-code">
       <div class="code-label">Código de seguimiento</div>
       <div class="code-value">{{ solicitud.codigo_seguimiento }}</div>
-      <div class="status-badge {% if estado >= 5 %}completed{% elif estado >= 2 %}in-progress{% else %}pending{% endif %}">
-        {{ solicitud.get_estado_display }}
-      </div>
+      
+      {% if ultima_modificacion %}
+        <!-- Si hay una modificación: mostrar Modificación a la izquierda y Trabajo a la derecha -->
+        <div class="estados-container estados-dual">
+          <div class="estado-item estado-left">
+            <div class="estado-label">Estado de Modificación</div>
+            <div class="status-badge status-mod_{{ ultima_modificacion.estado_mod }}">
+              {{ ultima_modificacion.get_estado_mod_display }}
+            </div>
+          </div>
+          <div class="estado-item estado-right">
+            <div class="estado-label">Estado del Trabajo</div>
+            <div class="status-badge work">
+              {{ estado_trabajo }}
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <!-- Si no hay modificación: mostrar solo Trabajo centrado -->
+        <div class="estados-container estados-single">
+          <div class="estado-item estado-center">
+            <div class="estado-label">Estado del Trabajo</div>
+            <div class="status-badge work">
+              {{ estado_trabajo }}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      {# Badge duplicado eliminado — se mantiene solo el badge principal arriba #}
     </div>
   </div>
 
   <!-- INFORMACIÓN DEL CLIENTE -->
   <div class="client-info">
-    <h4>Información del Cliente</h4>
+    <h4 class="section-title">Información del Cliente</h4>
     <div class="info-grid">
       <div class="info-item">
         <div class="info-label">👤 Nombre</div>
@@ -45,7 +74,7 @@
 
   <!-- INFORMACIÓN DEL PROYECTO -->
   <div class="client-info">
-    <h4>Detalles del Proyecto</h4>
+    <h4 class="section-title">Detalles del Proyecto</h4>
     <div class="info-grid">
       <div class="info-item" style="grid-column: 1 / -1;">
         <div class="info-label">📝 Requerimientos</div>
@@ -53,6 +82,108 @@
       </div>
     </div>
   </div>
+
+  <div class="client-info" style="background: linear-gradient(135deg, #f8fbff 0%, #eef6ff 100%); border: 1px solid #dbeafe; border-radius: 14px; box-shadow: 0 8px 20px rgba(23, 28, 53, 0.08);">
+    <h4 class="section-title" style="margin-bottom: 0.35rem;">📅 Agendar visita técnica</h4>
+    <p style="margin: 0 0 0.75rem; color: #4b5563;">Selecciona una fecha en la que estés disponible para que nuestro equipo pueda coordinar la visita técnica del proyecto.</p>
+    <a href="{% url 'agendar_visita' %}" class="step-btn step-btn-primary" style="display: inline-flex; align-items: center; text-decoration: none;">Agendar visita</a>
+  </div>
+
+  <!-- SEGUIMIENTO DE MODIFICACIONES -->
+  {% if ultima_modificacion %}
+    <div class="client-info {% if ultima_modificacion.estado_mod == 'aceptada' or ultima_modificacion.estado_mod == 'mod_aceptada' %}mod--aceptada{% elif ultima_modificacion.estado_mod == 'rechazada' or ultima_modificacion.estado_mod == 'mod_rechazada' %}mod--rechazada{% elif ultima_modificacion.estado_mod == 'en_revision' or ultima_modificacion.estado_mod == 'mod_en_revision' %}mod--en_revision{% else %}mod--creada{% endif %}">
+      <div class="mod-alert mod-container {% if ultima_modificacion.estado_mod == 'aceptada' or ultima_modificacion.estado_mod == 'mod_aceptada' %}mod--aceptada{% elif ultima_modificacion.estado_mod == 'rechazada' or ultima_modificacion.estado_mod == 'mod_rechazada' %}mod--rechazada{% elif ultima_modificacion.estado_mod == 'en_revision' or ultima_modificacion.estado_mod == 'mod_en_revision' %}mod--en_revision{% else %}mod--creada{% endif %}">
+        <div class="mod-inner">
+          <h4 class="mod-title">Seguimiento de Modificación</h4>
+          <div class="mod-meta">
+            <div class="mod-meta-item">
+              <div class="mod-meta-label">Estado</div>
+              <span class="status-badge status-mod_{{ ultima_modificacion.estado_mod }}">{{ ultima_modificacion.get_estado_mod_display }}</span>
+            </div>
+            <div class="mod-meta-item">
+              <div class="mod-meta-label">Solicitado</div>
+              <div>{{ ultima_modificacion.creado|date:"d/m/Y H:i" }}</div>
+            </div>
+            {% if ultima_modificacion.monto_adicional %}
+            <div class="mod-meta-item">
+              <div class="mod-meta-label">Monto adicional</div>
+              <div>{{ ultima_modificacion.monto_adicional|pesos_chilenos }}</div>
+            </div>
+            {% endif %}
+          </div>
+          <div class="mod-body">
+            <div class="mod-desc">{{ ultima_modificacion.descripcion }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- BARRA DE PROGRESO DEL TRABAJO (Solo en etapas de avance) -->
+  {% if trabajo_comenzado %}
+  <div class="client-info" style="background: linear-gradient(135deg, #e8f4f8 0%, #f0f9fc 100%);">
+    <h4 style="display: flex; align-items: center; gap: 0.5rem;">
+      <span>⚙️</span>
+      <span>Progreso del Trabajo</span>
+    </h4>
+    
+    <div class="progress-top">
+      <div class="progress-header">
+        <span class="progress-label">Avance General</span>
+        <span class="progress-percent">{{ solicitud.progreso_trabajo }}%</span>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" style="--progress: {{ solicitud.progreso_trabajo }}%;">
+          {% if solicitud.progreso_trabajo > 10 %}
+            <span class="progress-fill-text">{{ solicitud.progreso_trabajo }}%</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div style="
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        border-left: 4px solid #27ae60;
+      ">
+        {% if solicitud.progreso_trabajo == 0 %}
+          <p style="margin: 0; color: #666;">⏳ Preparando los materiales y recursos para comenzar.</p>
+        {% elif solicitud.progreso_trabajo < 25 %}
+          <p style="margin: 0; color: #666;">🚀 Iniciando el trabajo del proyecto.</p>
+        {% elif solicitud.progreso_trabajo < 50 %}
+          <p style="margin: 0; color: #666;">💼 Primera fase en desarrollo.</p>
+        {% elif solicitud.progreso_trabajo < 75 %}
+          <p style="margin: 0; color: #666;">🔧 Avance significativo en el proyecto.</p>
+        {% elif solicitud.progreso_trabajo < 100 %}
+          <p style="margin: 0; color: #666;">✨ Etapa final del proyecto en progreso.</p>
+        {% else %}
+          <p style="margin: 0; color: #27ae60; font-weight: bold;">✓ Proyecto completado al 100%</p>
+        {% endif %}
+      </div>
+      {% if solicitud.progreso_trabajo >= 100 and estado == 7 %}
+      <div style="margin-top: 1rem; padding: 1rem; background: #eafaf1; border-radius: 8px; border-left: 4px solid #27ae60;">
+        <p style="margin: 0; color: #166534; font-weight: 700;">El proyecto está completado al 100%. Ahora puedes pagar el saldo restante.</p>
+      </div>
+      {% endif %}
+
+      {% if solicitud.fecha_estimado_finalizacion %}
+      <div style="margin-top: 1.5rem; padding: 1rem; background: #ffffff; border-radius: 8px; border-left: 4px solid #171c35;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <div>
+            <div style="font-weight: 700; color: #171c35;">Fecha estimada de finalización</div>
+            <div style="color: #666; margin-top: 0.3rem;">{{ solicitud.fecha_estimado_finalizacion|date:"d/m/Y" }}</div>
+          </div>
+          <div style="background: #171c35; color: white; padding: 0.7rem 1rem; border-radius: 999px; font-weight: 700;">
+            {{ solicitud.fecha_estimado_finalizacion|date:"d/m/Y" }}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
 
   <!-- PROGRESO -->
   <div class="progress-section">
@@ -105,6 +236,12 @@
           <div class="step-title">Envío de Presupuesto</div>
           <div class="step-description">Recibirás tu cotización por correo electrónico.</div>
           {% if presupuesto %}
+          {% if presupuesto.total %}
+          <div style="margin: 1rem 0; padding: 1rem; background: linear-gradient(135deg, #fff5e6 0%, #ffe8cc 100%); border-left: 4px solid #f59e0b; border-radius: 8px;">
+            <div style="font-weight: 700; color: #92400e; font-size: 0.9rem;">💰 Monto Total del Presupuesto:</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #f59e0b; margin-top: 0.3rem;">{{ presupuesto.total|pesos_chilenos }}</div>
+          </div>
+          {% endif %}
           <div class="step-actions">
             <a href="{{ presupuesto.archivo.url }}" target="_blank" class="step-btn step-btn-primary">
               📥 Descargar Presupuesto
@@ -154,11 +291,72 @@
       <div class="progress-step" data-paso="6" data-estado="{{ estado }}">
         <div style="position: relative;">
           <div class="step-indicator">6</div>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-title">Pago 50% Inicial</div>
+          <div class="step-description">Realiza el pago del 50% inicial para comenzar con el proyecto.</div>
+          {% if estado == 6 %}
+          <div class="step-actions">
+            <a href="{% url 'pago_inicial' solicitud.codigo_seguimiento %}" class="step-btn step-btn-primary">
+              💳 Realizar Pago
+            </a>
+          </div>
+          {% elif estado >= 7 %}
+          <div class="step-actions">
+            <span class="step-btn step-btn-success" style="cursor: default; background: #27ae60;">
+              ✓ Pago Completado
+            </span>
+          </div>
+          {% if presupuesto %}
+          <div class="step-actions" style="margin-top: 0.6rem;">
+            <a href="{% url 'solicitar_modificacion' solicitud.codigo_seguimiento %}" class="step-btn step-btn-secondary">
+              ✏️ Solicitar Modificación
+            </a>
+          </div>
+          {% endif %}
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Paso 7 -->
+      <div class="progress-step" data-paso="7" data-estado="{{ estado }}">
+        <div style="position: relative;">
+          <div class="step-indicator">7</div>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-title">En Ejecución</div>
+          {% if solicitud.progreso_trabajo >= 100 %}
+          <div class="step-description">Proyecto completado al 100%. Ahora puedes pagar el saldo restante.</div>
+          {% else %}
+          <div class="step-description">Nuestro equipo está trabajando en tu proyecto.</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Paso 8 -->
+      <div class="progress-step" data-paso="8" data-estado="{{ estado }}">
+        <div style="position: relative;">
+          <div class="step-indicator">8</div>
           <div class="step-connector" style="display: none;"></div>
         </div>
         <div class="step-content">
-          <div class="step-title">Pago Final</div>
-          <div class="step-description">Una vez aceptada la propuesta, se procede con el pago del proyecto.</div>
+          <div class="step-title">Pago Final (50%)</div>
+          <div class="step-description">Una vez completado el proyecto, se solicita el pago final restante.</div>
+          {% if estado == 9 %}
+          <div class="step-actions">
+            <a href="{% url 'pago_final' solicitud.codigo_seguimiento %}" class="step-btn step-btn-primary">
+              💳 Pagar el saldo restante
+            </a>
+          </div>
+          {% elif estado == 10 %}
+          <div class="step-actions">
+            <span class="step-btn step-btn-success" style="cursor: default;">
+              ✓ Pago Final Completado
+            </span>
+          </div>
+          {% endif %}
         </div>
       </div>
     </div>

@@ -52,14 +52,88 @@ body {
   margin-bottom: 1rem;
 }
 
+.estados-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8faff 0%, #f0f4ff 100%);
+  border: 2px solid #e0e8ff;
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(42, 42, 255, 0.12);
+}
+
+.estados-single {
+  justify-content: center;
+}
+
+.estados-dual {
+  justify-content: space-between;
+}
+
+.estado-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  flex: 1;
+  min-width: 200px;
+}
+
+.estado-center {
+  flex: 0;
+}
+
+.estado-left {
+  align-items: flex-start;
+  flex: 1;
+}
+
+.estado-right {
+  align-items: flex-end;
+  flex: 1;
+}
+
+.estado-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
 .status-badge {
   display: inline-block;
-  padding: 0.6rem 1.4rem;
-  border-radius: 999px;
+  padding: 0.7rem 1.2rem;
+  border-radius: 12px;
   font-weight: 700;
   font-size: 0.95rem;
   letter-spacing: 0.04em;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
+
+.status-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+
+.status-badge.pending {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #78350f;
+}
+
+.status-badge.in-progress {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+}
+
+.status-badge.completed {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #0c2d6b;
+}
+
 
 .status-badge.pending {
   background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
@@ -79,6 +153,132 @@ body {
   box-shadow: 0 8px 16px rgba(59, 130, 246, 0.15);
 }
 
+.status-badge.status-no_revisada {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  color: #475569;
+}
+
+.status-badge.status-revisada {
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  color: #0c4a6e;
+}
+
+.status-badge.status-asignada {
+  background: linear-gradient(135deg, #dbeafe 0%, #c7d2fe 100%);
+  color: #1e3a8a;
+}
+
+.status-badge.status-cotizada {
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+  color: #5b21b6;
+}
+
+.status-badge.status-enviada {
+  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+  color: #064e3b;
+}
+
+.status-badge.status-aceptada {
+  background: linear-gradient(135deg, #00ef54 0%, #00f957 100%);
+  color: #166534;
+}
+
+.status-badge.status-creada {
+  background: linear-gradient(135deg, #facc15 0%, #fde047 100%);
+  color: #78350f;
+}
+
+.status-badge.status-en_revision {
+  background: linear-gradient(135deg, #e1ff00 0%, #f2ff00 100%);
+  color: #92400e;
+}
+
+.status-badge.status-rechazada {
+  background: linear-gradient(135deg, #ff0000 0%, #fecdd3 100%);
+  color: #991b1b;
+}
+
+.status-badge.status-pago_inicial {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+}
+
+.status-badge.status-en_ejecucion {
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  color: #075985;
+}
+
+.status-badge.status-completado {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  color: #14532d;
+}
+
+.status-badge.status-pagada {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+}
+
+.status-badge.status-rechazada {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecdd3 100%);
+  color: #991b1b;
+}
+
+.status-badge.status-mod_creada {
+  background: linear-gradient(135deg, #fef08a 0%, #fde047 100%) !important;
+  color: #92400e !important;
+  border: 1px solid rgba(245, 158, 11, 0.25) !important;
+}
+
+.status-badge.status-mod_en_revision {
+  background: linear-gradient(135deg, #fb923c 0%, #f97316 100%) !important;
+  color: #7c2d12 !important;
+  border: 1px solid rgba(249, 115, 22, 0.25) !important;
+}
+
+.status-badge.status-mod_aceptada {
+  background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%) !important;
+  color: #065f46 !important;
+  border: 1px solid rgba(16, 185, 129, 0.25) !important;
+}
+
+.status-badge.status-mod_rechazada {
+  background: linear-gradient(135deg, #fecaca 0%, #f87171 100%) !important;
+  color: #7f1d1d !important;
+  border: 1px solid rgba(239, 68, 68, 0.25) !important;
+}
+
+.mod-alert.mod--creada {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-color: #cbd5e1;
+}
+
+.mod-alert.mod--en_revision {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #fbbf24;
+}
+
+.mod-alert.mod--aceptada {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  border-color: #34d399;
+}
+
+.mod-alert.mod--rechazada {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecdd3 100%);
+  border-color: #fda4af;
+}
+
+.mod-state .status-badge {
+  margin-left: 0.5rem;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+.status-badge.work {
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
 .client-info {
   background: linear-gradient(135deg, #ffffff 0%, #f9fbff 100%);
   border: 2px solid #e0e8ff;
@@ -88,6 +288,43 @@ body {
   box-shadow: 0 8px 32px rgba(42, 42, 255, 0.08);
 }
 
+.client-info.mod--aceptada {
+  background: linear-gradient(135deg, #ecfdf5 0%, #bbf7d0 100%);
+  border-color: #22c55e;
+}
+
+.client-info.mod--rechazada {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecdd3 100%);
+  border-color: #ef4444;
+}
+
+.client-info.mod--en_revision {
+  background: linear-gradient(135deg, #fef9c3 0%, #fde68a 100%);
+  border-color: #f59e0b;
+}
+
+.client-info.mod--creada {
+  background: linear-gradient(135deg, #eef2ff 0%, #c7d2fe 100%);
+  border-color: #6366f1;
+}
+
+.client-info.mod--aceptada .mod-alert,
+.client-info.mod--rechazada .mod-alert,
+.client-info.mod--en_revision .mod-alert,
+.client-info.mod--creada .mod-alert {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+.client-info.mod--aceptada .mod-alert .mod-inner,
+.client-info.mod--rechazada .mod-alert .mod-inner,
+.client-info.mod--en_revision .mod-alert .mod-inner,
+.client-info.mod--creada .mod-alert .mod-inner {
+  background: rgba(255,255,255,0.96);
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: inset 0 0 0 1px rgba(15,23,42,0.04);
+}
 .client-info h4 {
   color: #1a1f4b;
   font-weight: 800;
@@ -397,6 +634,48 @@ body {
   color: #1a1f4b;
   font-weight: 800;
 }
+
+/* Additional styles for mod containers and progress block (organized) */
+.mod-container{display:block;width:100%;box-sizing:border-box;padding:1.6rem;border-radius:16px;border-left:6px solid transparent;margin-top:1rem;box-shadow:0 8px 24px rgba(16,24,40,0.04)}
+.mod-title{margin:0 0 .5rem 0}
+.mod-meta{display:flex;gap:1rem;align-items:center}
+.mod-state{font-weight:700}
+.mod-state-value{font-weight:900;margin-left:.5rem}
+.mod-body{margin-top:.8rem}
+.mod-desc{padding:.9rem;border-radius:8px}
+
+/* .mod-alert is the visible colored container shown only when a modification exists */
+.mod-alert{width:100%;display:block;border-radius:16px;padding:1rem;margin-top:1rem;background:rgba(255,255,255,0.95);border:1px solid rgba(148,163,184,0.25);box-shadow:0 10px 24px rgba(15,23,42,0.06)}
+.mod-alert .mod-inner{max-width:1100px;margin:0;display:grid;gap:1rem}
+.mod-alert .mod-title{font-size:1.25rem;margin-bottom:0.5rem}
+.mod-alert .mod-meta{display:flex;flex-wrap:wrap;gap:1rem;margin-top:0}
+.mod-meta-item{min-width:170px;flex:1 1 180px;display:flex;flex-direction:column;gap:0.3rem}
+.mod-meta-label{font-size:0.75rem;font-weight:700;text-transform:uppercase;color:rgba(15,23,42,0.65);letter-spacing:0.08em}
+.mod-alert .mod-desc{background:rgba(255,255,255,0.98);padding:1rem;border-radius:12px;border:1px solid rgba(15,23,42,0.08);color:inherit;line-height:1.7}
+.mod-alert .mod-date,.mod-alert .mod-state{opacity:0.95}
+.mod-monto{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:0.95rem 1rem;border-radius:14px;border:1px solid rgba(15,23,42,0.08);background:rgba(255,255,255,0.95);font-weight:700;color:rgba(15,23,42,0.92);margin-top:0.75rem}
+.mod-monto strong{color:rgba(15,23,42,0.88)}
+
+.mod-alert.mod--aceptada{background:rgba(220,252,231,0.9) !important;border-left-color:#22c55e !important;color:#064e3b !important}
+.mod-alert.mod--aceptada .mod-desc{background:rgba(255,255,255,0.95) !important;color:inherit !important;border:1px solid rgba(34,197,94,0.18) !important}
+
+.mod-alert.mod--rechazada{background:rgba(254,226,226,0.95) !important;border-left-color:#ef4444 !important;color:#7f1d1d !important}
+.mod-alert.mod--rechazada .mod-desc{background:rgba(255,255,255,0.95) !important;color:inherit !important;border:1px solid rgba(239,68,68,0.18) !important}
+
+.mod-alert.mod--en_revision{background:rgba(254,243,199,0.92) !important;border-left-color:#f59e0b !important;color:#92400e !important}
+.mod-alert.mod--en_revision .mod-desc{background:rgba(255,255,255,0.95) !important;color:inherit !important;border:1px solid rgba(245,158,11,0.18) !important}
+
+.mod-alert.mod--creada{background:rgba(226,232,255,0.92) !important;border-left-color:#6366f1 !important;color:#1e3a8a !important}
+.mod-alert.mod--creada .mod-desc{background:rgba(255,255,255,0.95) !important;color:inherit !important;border:1px solid rgba(99,102,241,0.18) !important}
+
+/* Progress bar styles (replaces inline styles) */
+.progress-top{margin-top:1.5rem}
+.progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem}
+.progress-label{color:#666;font-weight:500}
+.progress-percent{color:#171c35;font-weight:700;font-size:1.1rem}
+.progress-bar{width:100%;height:25px;background:#ddd;border-radius:12px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,.1)}
+.progress-fill{height:100%;width:var(--progress,0%);background:linear-gradient(90deg,#27ae60 0%,#2ecc71 100%);transition:width .3s ease;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:.85rem;padding:0 1rem}
+.progress-fill-text{color:white}
 
 @media (max-width: 768px) {
   .tracking-container {
