@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container" style="max-width: 720px; margin: 2rem auto;">
+  <h2>Requerimiento para Modificación</h2>
+  <p>Describe la modificación que deseas realizar en el proyecto. Si es posible se propone un ajuste de precio.</p>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div style="margin-bottom: 0.8rem;">
+      {{ form.motivo.label_tag }}
+      {{ form.motivo }}
+      {% if form.motivo.errors %}
+        <div style="color: red;">{{ form.motivo.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div style="margin-bottom: 1rem;">
+      {{ form.descripcion.label_tag }}
+      {{ form.descripcion }}
+      {% if form.descripcion.errors %}
+        <div style="color: red;">{{ form.descripcion.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div style="margin-bottom: 1rem;">
+      {{ form.especificaciones.label_tag }}
+      {{ form.especificaciones }}
+      {% if form.especificaciones.errors %}
+        <div style="color: red;">{{ form.especificaciones.errors }}</div>
+      {% endif %}
+    </div>
+
+    <!-- urgencia y fecha_limite eliminados -->
+
+    <div style="margin-top:1rem;">
+      {{ form.adjunto.label_tag }}
+      {{ form.adjunto }}
+      {% if form.adjunto.errors %}
+        <div style="color: red;">{{ form.adjunto.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div style="margin-top:1rem; display:flex; gap:1rem; flex-wrap:wrap;">
+      <div style="flex:1; min-width:200px;">
+        {{ form.contacto_nombre.label_tag }}
+        {{ form.contacto_nombre }}
+        {% if form.contacto_nombre.errors %}
+          <div style="color: red;">{{ form.contacto_nombre.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div style="flex:1; min-width:200px;">
+        {{ form.contacto_email.label_tag }}
+        {{ form.contacto_email }}
+        {% if form.contacto_email.errors %}
+          <div style="color: red;">{{ form.contacto_email.errors }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div style="margin-top:1rem;">
+      {{ form.codigo_seguimiento_cliente.label_tag }}
+      {{ form.codigo_seguimiento_cliente }}
+    </div>
+
+    <div style="margin-top: 1rem; color: #666;">Nota: El administrador revisará tu solicitud y propondrá un ajuste de precio si aplica.</div>
+
+    <div style="display:flex; gap:0.6rem; margin-top: 1rem; flex-wrap:wrap;">
+      <button type="submit" class="step-btn step-btn-primary" style="padding: 0.8rem 1.1rem; border-radius: 10px; font-weight: 700; display:inline-flex; align-items:center; gap:0.6rem; background: #2563eb; color: #ffffff; border: none;">
+        Enviar Solicitud
+      </button>
+
+      <a href="{% url 'seguimiento' solicitud.codigo_seguimiento %}" class="step-btn step-btn-secondary" style="padding: 0.7rem 1rem; border-radius: 10px; display:inline-flex; align-items:center; gap:0.5rem; background: transparent; border: none; color: #2563eb; text-decoration: none;">
+        <span style="font-size:14px;">✖</span>
+        Cancelar
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

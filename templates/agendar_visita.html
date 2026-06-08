@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="card-title mb-4">Agendar visita técnica</h1>
+          <p class="text-muted mb-4">
+            Completa los datos a continuación y indica el rango de fechas en que estás disponible para que uno de nuestros asesores confirme la visita.
+          </p>
+
+          <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-3">
+              <label for="id_nombre" class="form-label">Nombre completo</label>
+              {{ form.nombre }}
+              {% if form.nombre.errors %}
+                <div class="text-danger small">{{ form.nombre.errors|striptags }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="id_rut" class="form-label">RUT</label>
+              {{ form.rut }}
+              {% if form.rut.errors %}
+                <div class="text-danger small">{{ form.rut.errors|striptags }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="id_email" class="form-label">Correo electrónico</label>
+              {{ form.email }}
+              {% if form.email.errors %}
+                <div class="text-danger small">{{ form.email.errors|striptags }}</div>
+              {% endif %}
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="id_fecha_inicio_preferido" class="form-label">Desde</label>
+                  {{ form.fecha_inicio_preferido }}
+                  {% if form.fecha_inicio_preferido.errors %}
+                    <div class="text-danger small">{{ form.fecha_inicio_preferido.errors|striptags }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="id_fecha_fin_preferido" class="form-label">Hasta</label>
+                  {{ form.fecha_fin_preferido }}
+                  {% if form.fecha_fin_preferido.errors %}
+                    <div class="text-danger small">{{ form.fecha_fin_preferido.errors|striptags }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="id_telefono" class="form-label">Número telefónico</label>
+              {{ form.telefono }}
+              {% if form.telefono.errors %}
+                <div class="text-danger small">{{ form.telefono.errors|striptags }}</div>
+              {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg mt-2">Enviar solicitud</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
