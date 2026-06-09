@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django import forms
 from django.utils.html import format_html
 from django.conf import settings
 from django.core.mail import send_mail
@@ -291,8 +292,51 @@ class ServicioAdmin(admin.ModelAdmin):
     inlines = [ImagenServicioInline]
 
 
+class VisitaAdminForm(forms.ModelForm):
+    fecha_propuesta = forms.DateField(
+        required=False,
+        label='Fecha propuesta',
+        widget=forms.DateInput(attrs={'type': 'date'})
+    )
+
+    class Meta:
+        model = Visita
+        fields = (
+            'nombre',
+            'rut',
+            'email',
+            'telefono',
+            'estado',
+            'fecha_propuesta',
+            'evidencia',
+            'evidencia_observaciones',
+            'observaciones',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk and self.instance.fecha_inicio_propuesta:
+            self.fields['fecha_propuesta'].initial = self.instance.fecha_inicio_propuesta
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        fecha_propuesta = self.cleaned_data.get('fecha_propuesta') or instance.fecha_inicio_propuesta
+
+        if fecha_propuesta:
+            instance.fecha_inicio_propuesta = fecha_propuesta
+            instance.fecha_fin_propuesta = fecha_propuesta
+        else:
+            instance.fecha_inicio_propuesta = None
+            instance.fecha_fin_propuesta = None
+
+        if commit:
+            instance.save()
+        return instance
+
+
 @admin.register(Visita)
 class VisitaAdmin(admin.ModelAdmin):
+    form = VisitaAdminForm
     list_display = (
         'codigo',
         'nombre',
@@ -301,8 +345,8 @@ class VisitaAdmin(admin.ModelAdmin):
         'estado',
         'fecha_inicio_preferido',
         'fecha_fin_preferido',
-        'fecha_inicio_propuesta',
-        'fecha_fin_propuesta',
+        'fecha_propuesta_display',
+        'evidencia_cargada',
     )
     list_filter = ('estado', 'creado')
     search_fields = ('codigo', 'nombre', 'email', 'rut', 'telefono')
@@ -315,6 +359,19 @@ class VisitaAdmin(admin.ModelAdmin):
             'fields': ('fecha_inicio_preferido', 'fecha_fin_preferido')
         }),
         ('Propuesta del admin', {
-            'fields': ('estado', 'fecha_inicio_propuesta', 'fecha_fin_propuesta', 'observaciones')
+            'fields': ('estado', 'fecha_propuesta', 'observaciones')
+        }),
+        ('Evidencia de la visita', {
+            'fields': ('evidencia', 'evidencia_observaciones')
         }),
     )
+
+    @admin.display(description='Fecha propuesta')
+    def fecha_propuesta_display(self, obj):
+        return obj.fecha_inicio_propuesta or 'Sin fecha'
+
+    @admin.display(description='Evidencia')
+    def evidencia_cargada(self, obj):
+        if obj.evidencia:
+            return format_html('<a href="{}" target="_blank">Ver</a>', obj.evidencia.url)
+        return 'Sin evidencia'
