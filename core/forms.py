@@ -2,7 +2,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
-from .models import SolicitudInformacion, Modificacion, Presupuesto
+from .models import SolicitudInformacion, Modificacion, Presupuesto, Visita
 
 class SolicitarInfoForm(forms.ModelForm):
 
@@ -95,6 +95,13 @@ class AgendarVisitaForm(forms.Form):
         max_length=12,
         label='Número telefónico',
         widget=forms.TextInput(attrs={'placeholder': '56912345678', 'class': 'form-control'})
+    )
+
+
+class VisitaEvidenciaForm(forms.Form):
+    evidencia = forms.ImageField(
+        label='Evidencia de la visita',
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'})
     )
 
 

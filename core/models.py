@@ -31,6 +31,26 @@ class Estado(models.Model):
 
 
 class SolicitudInformacion(models.Model):
+<<<<<<< HEAD
+=======
+    ESTADOS = [
+        ('no_revisada', 'Pendiente de revisión'),
+        ('revisada', 'En revisión'),
+        ('aceptada', 'Aceptada'),
+        ('en_ejecucion', 'En ejecución'),
+        ('rechazada', 'Rechazada'),
+        ('asignada', 'Experto asignado'),
+        ('cotizada', 'Cotización generada'),
+        ('enviada', 'Cotización enviada'),
+        ('mod_creada', 'Modificación: Creada'),
+        ('mod_en_revision', 'Modificación: En revisión'),
+        ('mod_aceptada', 'Modificación: Aceptada'),
+        ('mod_rechazada', 'Modificación: Rechazada'),
+        ('pago_inicial', 'Pago 50% Inicial'),
+        ('completado', 'Completado'),
+        ('pagada', 'Pagada'),
+    ]
+>>>>>>> 084b0cd9ac34e6a8d9e97d0df0ea5ac13d506afe
 
     servicio = models.ForeignKey(
         Servicio,
@@ -121,10 +141,10 @@ class Presupuesto(models.Model):
 
 class Visita(models.Model):
     ESTADOS_VISITA = [
-        ('pendiente', 'Pendiente'),
-        ('propuesta', 'Propuesta de nueva fecha'),
-        ('confirmada', 'Confirmada'),
-        ('rechazada', 'Rechazada'),
+        ('pendiente', 'Solicitud creada'),
+        ('propuesta', 'En revisión'),
+        ('confirmada', 'Aceptada'),
+        ('rechazada', 'Solicitud rechazada'),
     ]
 
     codigo = models.CharField(max_length=30, unique=True, blank=True)
@@ -137,6 +157,8 @@ class Visita(models.Model):
     fecha_inicio_propuesta = models.DateField(blank=True, null=True)
     fecha_fin_propuesta = models.DateField(blank=True, null=True)
     estado = models.CharField(max_length=20, choices=ESTADOS_VISITA, default='pendiente')
+    evidencia = models.ImageField(upload_to='visitas/evidencias/', blank=True, null=True)
+    evidencia_observaciones = models.TextField(blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
     creado = models.DateTimeField(auto_now_add=True)
 
@@ -152,6 +174,28 @@ class Visita(models.Model):
 
     def __str__(self):
         return f"Visita {self.codigo} - {self.nombre}"
+
+    @property
+    def estado_publico(self):
+        return {
+            'pendiente': 'Solicitud creada',
+            'propuesta': 'En revisión',
+            'confirmada': 'Aceptada',
+            'rechazada': 'Solicitud rechazada',
+        }.get(self.estado, 'Solicitud creada')
+
+    @property
+    def paso_estado(self):
+        return {
+            'pendiente': 1,
+            'propuesta': 2,
+            'confirmada': 3,
+            'rechazada': 0,
+        }.get(self.estado, 1)
+
+    @property
+    def fecha_reflejada(self):
+        return bool(self.fecha_inicio_propuesta and self.fecha_fin_propuesta)
 
 
 class Modificacion(models.Model):

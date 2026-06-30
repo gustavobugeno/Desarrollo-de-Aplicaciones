@@ -140,7 +140,12 @@ def solicitar_info(request, servicio_id):
 # ----------------------------
 def seguimiento(request, codigo):
     codigo = codigo.strip()
-    solicitud = get_object_or_404(SolicitudInformacion, codigo_seguimiento=codigo)
+    solicitud = SolicitudInformacion.objects.filter(codigo_seguimiento=codigo).select_related('servicio').prefetch_related('modificaciones').first()
+
+    if solicitud is None:
+        return render(request, "seguimiento_no_encontrado.html", {
+            "codigo": codigo,
+        }, status=404)
 
     # Obtener el código del estado actual
     estado_codigo = solicitud.estado_actual.codigo if solicitud.estado_actual else "no_revisada"
@@ -190,6 +195,8 @@ def seguimiento(request, codigo):
     presupuesto = getattr(solicitud, 'presupuesto', None)
 
     ultima_modificacion = solicitud.modificaciones.order_by('-creado').first()
+    modificaciones = solicitud.modificaciones.order_by('-creado')
+    revision_activa = bool(ultima_modificacion and ultima_modificacion.estado_mod in ['en_revision', 'mod_en_revision'])
 
     return render(request, "seguimiento.html", {
         "solicitud": solicitud,
@@ -199,6 +206,8 @@ def seguimiento(request, codigo):
         "trabajo_comenzado": trabajo_comenzado,
         "presupuesto": presupuesto,
         "ultima_modificacion": ultima_modificacion,
+        "modificaciones": modificaciones,
+        "revision_activa": revision_activa,
     })
 
 # ----------------------------
@@ -208,6 +217,9 @@ def seguimiento_base(request):
     codigo = request.GET.get('codigo', '').strip()
 
     if codigo:
+        codigo_normalizado = codigo.upper()
+        if codigo_normalizado.startswith('VIS-'):
+            return redirect('visita_estado', codigo=codigo_normalizado)
         return redirect('seguimiento', codigo=codigo)
 
     return redirect('inicio')
