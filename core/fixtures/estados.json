@@ -1,0 +1,19 @@
+[
+  {"model": "core.estado", "pk": 1, "fields": {"codigo": "no_revisada", "nombre": "No revisada", "orden": 1, "activo": true}},
+  {"model": "core.estado", "pk": 2, "fields": {"codigo": "revisada", "nombre": "Revisada por experto", "orden": 2, "activo": true}},
+  {"model": "core.estado", "pk": 3, "fields": {"codigo": "asignada", "nombre": "Experto asignado", "orden": 3, "activo": true}},
+  {"model": "core.estado", "pk": 4, "fields": {"codigo": "cotizada", "nombre": "Cotización generada", "orden": 4, "activo": true}},
+  {"model": "core.estado", "pk": 5, "fields": {"codigo": "enviada", "nombre": "Cotización enviada", "orden": 5, "activo": true}},
+  {"model": "core.estado", "pk": 6, "fields": {"codigo": "aceptada", "nombre": "Aceptada", "orden": 6, "activo": true}},
+  {"model": "core.estado", "pk": 7, "fields": {"codigo": "pago_inicial", "nombre": "Pago 50% Inicial", "orden": 7, "activo": true}},
+  {"model": "core.estado", "pk": 8, "fields": {"codigo": "en_ejecucion", "nombre": "En ejecución", "orden": 8, "activo": true}},
+  {"model": "core.estado", "pk": 9, "fields": {"codigo": "completado", "nombre": "Completado", "orden": 9, "activo": true}},
+  {"model": "core.estado", "pk": 16, "fields": {"codigo": "pago_final", "nombre": "Pago Final", "orden": 10, "activo": true}},
+  {"model": "core.estado", "pk": 10, "fields": {"codigo": "pagada", "nombre": "Pagada", "orden": 11, "activo": true}},
+  {"model": "core.estado", "pk": 11, "fields": {"codigo": "rechazada", "nombre": "Rechazada", "orden": 12, "activo": true}},
+  {"model": "core.estado", "pk": 17, "fields": {"codigo": "finalizado", "nombre": "Finalizado", "orden": 13, "activo": true}},
+  {"model": "core.estado", "pk": 12, "fields": {"codigo": "mod_creada", "nombre": "Modificación creada", "orden": 100, "activo": true}},
+  {"model": "core.estado", "pk": 13, "fields": {"codigo": "mod_en_revision", "nombre": "Modificación en revisión", "orden": 101, "activo": true}},
+  {"model": "core.estado", "pk": 14, "fields": {"codigo": "mod_aceptada", "nombre": "Modificación aceptada", "orden": 102, "activo": true}},
+  {"model": "core.estado", "pk": 15, "fields": {"codigo": "mod_rechazada", "nombre": "Modificación rechazada", "orden": 103, "activo": true}}
+]
