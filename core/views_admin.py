@@ -154,7 +154,6 @@ def create_admin(request):
     )
     return HttpResponse("Superusuario creado correctamente.")
 
-
 # ============================
 # FLUJO DE ESTADOS
 # ============================
@@ -164,16 +163,19 @@ def flujo_solicitud(request, id):
     solicitud = get_object_or_404(SolicitudInformacion, id=id)
     estado = solicitud.estado_actual
 
+    # Si no hay estado asignado, toma el primero activo
     if not estado:
         estado = Estado.objects.filter(activo=True).order_by('orden').first()
         solicitud.estado_actual = estado
         solicitud.save()
 
-    return render(request, f"estados/{estado.template}", {
+    # Si el estado no tiene template definido, usa uno por defecto
+    template = estado.template if estado and estado.template else "estado_default.html"
+
+    return render(request, f"estados/{template}", {
         "solicitud": solicitud,
         "estado": estado
     })
-
 
 # ============================
 # AVANZAR ESTADO (CORREGIDO)

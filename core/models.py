@@ -24,7 +24,10 @@ class Estado(models.Model):
     codigo = models.CharField(max_length=50, unique=True)
     orden = models.PositiveIntegerField()
     activo = models.BooleanField(default=True)
-    template = models.CharField(max_length=100)
+    template = models.CharField(
+        max_length=100,
+        default="estado_default.html"  # Template seguro por defecto
+    )
 
     def __str__(self):
         return f"{self.orden} - {self.nombre}"

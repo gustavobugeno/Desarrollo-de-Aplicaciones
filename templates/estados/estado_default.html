@@ -1,0 +1,14 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block contenido %}
+<div class="estado-default">
+    <h2>Estado actual de la solicitud</h2>
+
+    <p><strong>Solicitud ID:</strong> {{ solicitud.id }}</p>
+
+    <p><strong>Estado:</strong> {{ estado.nombre }}</p>
+
+    <p>Este estado no tiene una plantilla específica asignada.</p>
+
+    <p>Puedes continuar gestionando la solicitud desde el panel.</p>
+</div>
+{% endblock %}
