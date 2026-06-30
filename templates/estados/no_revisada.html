@@ -1,0 +1,20 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block contenido %}
+<div class="estado-card">
+    <h2>Solicitud recibida - Pendiente de revisión</h2>
+
+    <div class="estado-info">
+        <p><strong>Código:</strong> {{ solicitud.codigo_seguimiento }}</p>
+        <p><strong>Cliente:</strong> {{ solicitud.nombre }}</p>
+        <p><strong>Email:</strong> {{ solicitud.email }}</p>
+        <p><strong>Teléfono:</strong> {{ solicitud.telefono }}</p>
+        <p><strong>Ubicación:</strong> {{ solicitud.ubicacion }}</p>
+        <p><strong>Requerimientos:</strong> {{ solicitud.requerimientos }}</p>
+    </div>
+
+    <div class="acciones">
+        <a href="{% url 'avanzar_estado' solicitud.id %}" class="btn btn-success">Marcar como revisada</a>
+        <a href="{% url 'admin_solicitudes' %}" class="btn btn-secondary">Volver</a>
+    </div>
+</div>
+{% endblock %}

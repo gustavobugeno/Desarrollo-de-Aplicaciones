@@ -1,0 +1,25 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block contenido %}
+<div class="estado-card">
+    <h2>Experto asignado - Subir cotización</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label>Archivo PDF de cotización:</label>
+        <input type="file" name="cotizacion_pdf" accept="application/pdf" required>
+
+        <label>Monto total:</label>
+        <input type="number" name="monto" required>
+
+        <label>Tiempo estimado:</label>
+        <input type="text" name="tiempo_estimado" required>
+
+        <button type="submit" class="btn btn-primary">Subir cotización</button>
+    </form>
+
+    <div class="acciones">
+        <a href="{% url 'retroceder_estado' solicitud.id %}" class="btn btn-warning">Volver atrás</a>
+        <a href="{% url 'admin_solicitudes' %}" class="btn btn-secondary">Volver</a>
+    </div>
+</div>
+{% endblock %}

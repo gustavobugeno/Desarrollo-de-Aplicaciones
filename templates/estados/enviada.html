@@ -1,0 +1,14 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block contenido %}
+<div class="estado-card">
+    <h2>Cotización enviada - Esperando respuesta del cliente</h2>
+
+    <p>El cliente debe aceptar o rechazar la cotización.</p>
+
+    <div class="acciones">
+        <a href="{% url 'aceptar_cotizacion' solicitud.id %}" class="btn btn-success">Aceptar</a>
+        <a href="{% url 'rechazar_cotizacion' solicitud.id %}" class="btn btn-danger">Rechazar</a>
+        <a href="{% url 'retroceder_estado' solicitud.id %}" class="btn btn-warning">Volver atrás</a>
+    </div>
+</div>
+{% endblock %}

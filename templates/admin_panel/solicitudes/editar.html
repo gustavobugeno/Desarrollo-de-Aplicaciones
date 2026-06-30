@@ -1,0 +1,42 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block contenido %}
+<h1>Editar Solicitud</h1>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <label>Nombre</label>
+    <input type="text" name="nombre" value="{{ solicitud.nombre }}">
+
+    <label>Email</label>
+    <input type="email" name="email" value="{{ solicitud.email }}">
+
+    <label>Teléfono</label>
+    <input type="text" name="telefono" value="{{ solicitud.telefono }}">
+
+    <label>Ubicación</label>
+    <input type="text" name="ubicacion" value="{{ solicitud.ubicacion }}">
+
+    <label>Cuándo comenzar</label>
+    <input type="text" name="cuando_comenzar" value="{{ solicitud.cuando_comenzar }}">
+
+    <label>Requerimientos</label>
+    <textarea name="requerimientos">{{ solicitud.requerimientos }}</textarea>
+
+    <label>Estado</label>
+    <<select name="estado_actual">
+    {% for estado in estados %}
+        <option value="{{ estado.id }}" 
+            {% if solicitud.estado_actual and solicitud.estado_actual.id == estado.id %}
+                selected
+            {% endif %}
+        >
+            {{ estado.nombre }}
+        </option>
+    {% endfor %}
+</select>
+
+    <button type="submit">Guardar cambios</button>
+</form>
+{% endblock %}

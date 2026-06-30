@@ -4,7 +4,6 @@ from django.db import models
 from django.core.validators import RegexValidator
 
 
-
 def generar_codigo():
     año = "2025"
     numero = ''.join(random.choices(string.digits, k=5))
@@ -14,33 +13,24 @@ def generar_codigo():
 class Servicio(models.Model):
     titulo = models.CharField("Nombre del Servicio", max_length=100)
     descripcion = models.TextField("Descripción", blank=True, null=True)
-
-    imagen = models.ImageField(
-    upload_to='servicios/imagenes_extra/'
-)
+    imagen = models.ImageField(upload_to='servicios/imagenes_extra/')
 
     def __str__(self):
         return self.titulo
 
 
+class Estado(models.Model):
+    nombre = models.CharField(max_length=100)
+    codigo = models.CharField(max_length=50, unique=True)
+    orden = models.PositiveIntegerField()
+    activo = models.BooleanField(default=True)
+    template = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.orden} - {self.nombre}"
+
+
 class SolicitudInformacion(models.Model):
-    ESTADOS = [
-        ('no_revisada', 'No revisada'),
-        ('revisada', 'Revisada por experto'),
-        ('asignada', 'Experto asignado'),
-        ('cotizada', 'Cotización generada'),
-        ('enviada', 'Cotización enviada'),
-        ('aceptada', 'Aceptada'),
-        ('mod_creada', 'Modificación: Creada'),
-        ('mod_en_revision', 'Modificación: En revisión'),
-        ('mod_aceptada', 'Modificación: Aceptada'),
-        ('mod_rechazada', 'Modificación: Rechazada'),
-        ('pago_inicial', 'Pago 50% Inicial'),
-        ('en_ejecucion', 'En Ejecución'),
-        ('completado', 'Completado'),
-        ('pagada', 'Pagada'),
-        ('rechazada', 'Rechazada'),
-    ]
 
     servicio = models.ForeignKey(
         Servicio,
@@ -73,17 +63,31 @@ class SolicitudInformacion(models.Model):
     cuando_comenzar = models.CharField(max_length=20)
     requerimientos = models.TextField()
 
-    estado = models.CharField(max_length=20, choices=ESTADOS, default='no_revisada')
+    estado_actual = models.ForeignKey(
+        Estado,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="solicitudes"
+    )
+
     fecha_envio = models.DateTimeField(auto_now_add=True)
 
     codigo_seguimiento = models.CharField(max_length=30, unique=True, blank=True)
     comentarios_cambios = models.TextField(blank=True, null=True)
-    progreso_trabajo = models.IntegerField(default=0, help_text="Porcentaje de progreso (0-100)")
-    fecha_estimado_finalizacion = models.DateField(blank=True, null=True, help_text="Fecha estimada de finalización del proyecto")
+    progreso_trabajo = models.IntegerField(default=0)
+    fecha_estimado_finalizacion = models.DateField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
+        # Generar código si no existe
         if not self.codigo_seguimiento:
             self.codigo_seguimiento = generar_codigo()
+
+        # Asignar estado inicial automáticamente
+        if not self.estado_actual:
+            estado_inicial = Estado.objects.filter(activo=True).order_by('orden').first()
+            self.estado_actual = estado_inicial
+
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -94,9 +98,7 @@ class ImagenServicio(models.Model):
     servicio = models.ForeignKey(
         Servicio, related_name='imagenes_extra', on_delete=models.CASCADE
     )
-    imagen = models.ImageField(
-    upload_to='servicios/imagenes_extra/'
-)
+    imagen = models.ImageField(upload_to='servicios/imagenes_extra/')
 
     def __str__(self):
         return f"Imagen de {self.servicio.titulo}"
@@ -109,10 +111,7 @@ class Presupuesto(models.Model):
         related_name='presupuesto'
     )
 
-    archivo = models.FileField(
-    upload_to='presupuestos/'
-)
-
+    archivo = models.FileField(upload_to='presupuestos/')
     fecha = models.DateField(auto_now_add=True)
     total = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
 
@@ -175,17 +174,16 @@ class Modificacion(models.Model):
     contacto_email = models.EmailField(blank=True, null=True)
     codigo_seguimiento_cliente = models.CharField(max_length=50, blank=True, null=True)
     monto_adicional = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-    # Campos adicionales para la solicitud del cliente
     adjunto = models.FileField(upload_to='modificaciones/', null=True, blank=True)
-    adjunto = models.FileField(upload_to='modificaciones/', null=True, blank=True)
-    # El administrador propondrá el monto a aplicar (precio en moneda del presupuesto)
     admin_monto_propuesto = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+
     ESTADO_MOD_CHOICES = [
         ('creada', 'Creada'),
         ('en_revision', 'En revisión'),
         ('aceptada', 'Aceptada'),
         ('rechazada', 'Rechazada'),
     ]
+
     estado_mod = models.CharField(max_length=20, choices=ESTADO_MOD_CHOICES, default='creada')
     creado = models.DateTimeField(auto_now_add=True)
     aceptada = models.BooleanField(default=False)

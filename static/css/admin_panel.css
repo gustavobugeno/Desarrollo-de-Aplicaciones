@@ -1,0 +1,122 @@
+/* ======== LAYOUT GENERAL ======== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f9;
+    margin: 0;
+    display: flex;
+    height: 100vh;
+}
+
+/* ======== CONTENEDOR PRINCIPAL ======== */
+.layout {
+    display: flex;
+    height: 100%;
+}
+
+/* ======== SIDEBAR ======== */
+.sidebar {
+    width: 240px;
+    background-color: #1e1e2f;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.sidebar h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: #00bcd4;
+}
+
+.sidebar h3 {
+    font-size: 16px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #aaa;
+}
+
+.sidebar a {
+    color: #ddd;
+    text-decoration: none;
+    padding: 8px 10px;
+    border-radius: 6px;
+    display: block;
+    transition: background 0.3s;
+}
+
+.sidebar a:hover {
+    background-color: #00bcd4;
+    color: #fff;
+}
+
+/* ======== CONTENIDO ======== */
+.content {
+    margin-left: 260px; /* deja espacio para el sidebar fijo */
+    padding: 40px;
+    width: calc(100% - 260px);
+    background-color: #f4f6f9;
+    overflow-y: auto;
+}
+
+/* ======== TITULOS ======== */
+.content h1, .content h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* ======== TABLAS ======== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+}
+
+th {
+    background-color: #00bcd4;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #e0f7fa;
+}
+
+/* ======== BOTONES ======== */
+.btn {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.btn-primary {
+    background-color: #00bcd4;
+    color: white;
+}
+
+.btn-danger {
+    background-color: #e53935;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.85;
+}

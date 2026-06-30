@@ -1,0 +1,21 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block contenido %}
+<div class="estado-card">
+    <h2>Cotización aceptada - Pago inicial</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label>Comprobante de pago (PDF o imagen):</label>
+        <input type="file" name="pago_inicial" required>
+
+        <label>Monto pagado:</label>
+        <input type="number" name="monto_pagado" required>
+
+        <button type="submit" class="btn btn-success">Confirmar pago inicial</button>
+    </form>
+
+    <div class="acciones">
+        <a href="{% url 'retroceder_estado' solicitud.id %}" class="btn btn-warning">Volver atrás</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block contenido %}
+<h1>Solicitudes</h1>
+
+<table class="tabla-admin">
+    <tr>
+        <th>Código</th>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+    </tr>
+
+    {% for s in solicitudes %}
+    <tr>
+        <td>{{ s.codigo_seguimiento }}</td>
+        <td>{{ s.nombre }}</td>
+        <td>{{ s.email }}</td>
+        <td>{{ s.get_estado_display }}</td>
+        <td>
+            <a href="{% url 'flujo_solicitud' s.id %}">Ver</a>
+            <a href="{% url 'admin_solicitud_editar' s.id %}">Editar</a>
+            <a href="{% url 'admin_solicitud_eliminar' s.id %}" class="danger">Eliminar</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

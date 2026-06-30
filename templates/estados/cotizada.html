@@ -1,0 +1,14 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block contenido %}
+<div class="estado-card">
+    <h2>Cotización generada - Enviar al cliente</h2>
+
+    <p>La cotización está lista para ser enviada al cliente.</p>
+
+    <div class="acciones">
+        <a href="{% url 'avanzar_estado' solicitud.id %}" class="btn btn-success">Enviar cotización</a>
+        <a href="{% url 'retroceder_estado' solicitud.id %}" class="btn btn-warning">Volver atrás</a>
+        <a href="{% url 'admin_solicitudes' %}" class="btn btn-secondary">Volver</a>
+    </div>
+</div>
+{% endblock %}

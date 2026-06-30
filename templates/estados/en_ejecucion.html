@@ -1,0 +1,22 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block contenido %}
+<div class="estado-card">
+    <h2>Trabajo en ejecución</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label>Subir avance:</label>
+        <input type="file" name="avance">
+
+        <label>Comentarios:</label>
+        <textarea name="comentarios"></textarea>
+
+        <button type="submit" class="btn btn-primary">Guardar avance</button>
+    </form>
+
+    <div class="acciones">
+        <a href="{% url 'avanzar_estado' solicitud.id %}" class="btn btn-success">Marcar como completado</a>
+        <a href="{% url 'retroceder_estado' solicitud.id %}" class="btn btn-warning">Volver atrás</a>
+    </div>
+</div>
+{% endblock %}

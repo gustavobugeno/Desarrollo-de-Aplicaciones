@@ -3,10 +3,18 @@ from django.utils.html import format_html
 from django.conf import settings
 from django.core.mail import send_mail
 from decimal import Decimal
-
-from .models import Servicio, ImagenServicio, SolicitudInformacion, Presupuesto, Modificacion, Visita
-from .forms import PresupuestoForm, ModificacionAdminForm
 from django.utils import timezone
+
+from .models import (
+    Servicio,
+    ImagenServicio,
+    SolicitudInformacion,
+    Presupuesto,
+    Modificacion,
+    Visita,
+    Estado
+)
+from .forms import PresupuestoForm, ModificacionAdminForm
 
 
 # ----------------------------
@@ -36,6 +44,9 @@ class SolicitudInformacionAdmin(admin.ModelAdmin):
 
     # ---- ESTADO COLOREADO ----
     def estado_coloreado(self, obj):
+        if not obj.estado_actual:
+            return "Sin estado"
+
         colores = {
             'no_revisada': 'orange',
             'revisada': 'blue',
@@ -48,13 +59,20 @@ class SolicitudInformacionAdmin(admin.ModelAdmin):
             'completado': '#0b75ad',
             'pagada': 'darkgreen',
             'rechazada': 'red',
+            'mod_creada': 'gray',
+            'mod_en_revision': 'orange',
+            'mod_aceptada': 'green',
+            'mod_rechazada': 'red',
         }
-        color = colores.get(obj.estado, 'black')
+
+        color = colores.get(obj.estado_actual.codigo, 'black')
+
         return format_html(
             '<span style="color: {}; font-weight: bold;">{}</span>',
             color,
-            obj.get_estado_display()
+            obj.estado_actual.nombre
         )
+
     estado_coloreado.short_description = "Estado"
 
     # ---- LIST DISPLAY ----
@@ -71,7 +89,7 @@ class SolicitudInformacionAdmin(admin.ModelAdmin):
     )
 
     search_fields = ('nombre', 'email', 'telefono', 'codigo_seguimiento')
-    list_filter = ('estado', 'servicio', 'fecha_envio')
+    list_filter = ('estado_actual', 'servicio', 'fecha_envio')
     ordering = ('-fecha_envio',)
 
     # ---- FIELDSETS ----
@@ -83,7 +101,7 @@ class SolicitudInformacionAdmin(admin.ModelAdmin):
             'fields': ('ubicacion', 'cuando_comenzar', 'tienes_terreno', 'requerimientos')
         }),
         ('Estado y Seguimiento', {
-            'fields': ('estado', 'codigo_seguimiento', 'comentarios_cambios', 'fecha_estimado_finalizacion')
+            'fields': ('estado_actual', 'codigo_seguimiento', 'comentarios_cambios', 'fecha_estimado_finalizacion')
         }),
         ('Progreso del Trabajo', {
             'fields': ('progreso_trabajo',),
@@ -93,7 +111,7 @@ class SolicitudInformacionAdmin(admin.ModelAdmin):
 
     # ---- ENVÍO AUTOMÁTICO AL CAMBIAR ESTADO ----
     def save_model(self, request, obj, form, change):
-        estado_cambiado = "estado" in form.changed_data
+        estado_cambiado = "estado_actual" in form.changed_data
 
         super().save_model(request, obj, form, change)
 
@@ -102,7 +120,7 @@ class SolicitudInformacionAdmin(admin.ModelAdmin):
             mensaje = (
                 f"Hola {obj.nombre},\n\n"
                 f"Su solicitud ha cambiado de estado.\n\n"
-                f"Nuevo estado: {obj.get_estado_display()}\n\n"
+                f"Nuevo estado: {obj.estado_actual.nombre}\n\n"
                 f"Puede revisar el detalle en:\n"
                 f"https://desarrollo-cbc-eirl.onrender.com/seguimiento/{obj.codigo_seguimiento}/\n\n"
                 "Gracias por preferir CBC E.I.R.L."
@@ -116,13 +134,22 @@ class SolicitudInformacionAdmin(admin.ModelAdmin):
                 fail_silently=True,
             )
 
-    # ---- ACCIÓN MANUAL PARA ENVIAR CORREO ----
-    @admin.action(description="Enviar correo manual al cliente")
+    # ---- ACCIÓN: MARCAR COMPLETADO ----
     @admin.action(description="Marcar solicitudes como completadas")
     def marcar_completado(self, request, queryset):
-        updated = queryset.update(estado='completado', progreso_trabajo=100)
+        estado_completado = Estado.objects.get(codigo='completado')
+        updated = 0
+
+        for obj in queryset:
+            obj.estado_actual = estado_completado
+            obj.progreso_trabajo = 100
+            obj.save()
+            updated += 1
+
         self.message_user(request, f"✅ {updated} solicitud(es) marcadas como completadas.")
 
+    # ---- ACCIÓN: ENVIAR CORREO MANUAL ----
+    @admin.action(description="Enviar correo manual al cliente")
     def enviar_correo_manual(self, request, queryset):
         for obj in queryset:
             asunto = f"Mensaje sobre su solicitud {obj.codigo_seguimiento}"
@@ -152,99 +179,148 @@ class ImagenServicioInline(admin.TabularInline):
     extra = 1
 
 
+@admin.register(Servicio)
+class ServicioAdmin(admin.ModelAdmin):
+    list_display = ('titulo',)
+    inlines = [ImagenServicioInline]
+
+
+# ----------------------------
+#  ADMIN PARA MODIFICACIONES
+# ----------------------------
 @admin.register(Modificacion)
 class ModificacionAdmin(admin.ModelAdmin):
     form = ModificacionAdminForm
-    list_display = ('solicitud', 'descripcion_short', 'motivo', 'estado_mod', 'monto_adicional', 'admin_monto_propuesto', 'aceptada', 'creado')
+    list_display = (
+        'solicitud',
+        'descripcion_short',
+        'motivo',
+        'estado_mod',
+        'monto_adicional',
+        'admin_monto_propuesto',
+        'aceptada',
+        'creado'
+    )
     list_filter = ('estado_mod', 'aceptada', 'creado')
     actions = ['marcar_en_revision', 'aceptar_modificacion', 'rechazar_modificacion']
     list_editable = ('admin_monto_propuesto', 'estado_mod')
     readonly_fields = ('creado', 'fecha_aceptacion')
+
     fieldsets = (
-        (None, {'fields': ('solicitud', 'presupuesto', 'motivo', 'descripcion', 'especificaciones', 'adjunto', 'monto_adicional', 'estado_mod')}),
-        ('Propuesta del Admin', {'fields': ('admin_monto_propuesto', 'admin_observaciones', 'fecha_aceptacion')}),
+        (None, {
+            'fields': (
+                'solicitud',
+                'presupuesto',
+                'motivo',
+                'descripcion',
+                'especificaciones',
+                'adjunto',
+                'monto_adicional',
+                'estado_mod'
+            )
+        }),
+        ('Propuesta del Admin', {
+            'fields': ('admin_monto_propuesto', 'admin_observaciones', 'fecha_aceptacion')
+        }),
     )
 
     def descripcion_short(self, obj):
         return (obj.descripcion[:60] + '...') if len(obj.descripcion) > 60 else obj.descripcion
+
     descripcion_short.short_description = 'Descripción'
 
+    # ---- ACEPTAR MODIFICACIÓN ----
     @admin.action(description='Aceptar modificación y actualizar presupuesto')
     def aceptar_modificacion(self, request, queryset):
         updated = 0
         skipped = 0
+
         for mod in queryset:
             if mod.aceptada:
                 skipped += 1
                 continue
+
             pres = mod.presupuesto
+
             if pres and mod.admin_monto_propuesto is not None:
-                # Aplicar el monto propuesto por el admin como aumento (sumarlo al total)
-                if pres.total:
-                    pres.total = pres.total + mod.admin_monto_propuesto
-                else:
-                    pres.total = mod.admin_monto_propuesto
+                pres.total = (pres.total or 0) + mod.admin_monto_propuesto
                 pres.save()
+
                 mod.aceptada = True
                 mod.estado_mod = 'aceptada'
                 mod.fecha_aceptacion = timezone.now()
                 mod.save()
-                # actualizar estado de la solicitud principal
+
                 solicitud = mod.solicitud
-                solicitud.estado = 'mod_aceptada'
+                solicitud.estado_actual = Estado.objects.get(codigo='mod_aceptada')
                 solicitud.save()
+
                 updated += 1
             else:
                 skipped += 1
 
-        self.message_user(request, f"✅ {updated} modificación(es) aceptada(s). {skipped} omitida(s) (sin monto propuesto o ya aceptadas).")
+        self.message_user(
+            request,
+            f"✅ {updated} modificación(es) aceptada(s). {skipped} omitida(s)."
+        )
 
+    # ---- MARCAR EN REVISIÓN ----
     @admin.action(description='Marcar modificación como En Revisión')
     def marcar_en_revision(self, request, queryset):
         updated = 0
+
         for mod in queryset:
             if mod.estado_mod != 'en_revision':
                 mod.estado_mod = 'en_revision'
                 mod.save()
-                # actualizar solicitud
+
                 solicitud = mod.solicitud
-                solicitud.estado = 'mod_en_revision'
+                solicitud.estado_actual = Estado.objects.get(codigo='mod_en_revision')
                 solicitud.save()
+
                 updated += 1
+
         self.message_user(request, f"ℹ️ {updated} modificación(es) marcadas como en revisión.")
 
+    # ---- RECHAZAR MODIFICACIÓN ----
     @admin.action(description='Rechazar modificación')
     def rechazar_modificacion(self, request, queryset):
         updated = 0
+
         for mod in queryset:
             if mod.estado_mod != 'rechazada':
                 mod.estado_mod = 'rechazada'
                 mod.aceptada = False
                 mod.fecha_aceptacion = None
                 mod.save()
+
                 solicitud = mod.solicitud
-                solicitud.estado = 'mod_rechazada'
+                solicitud.estado_actual = Estado.objects.get(codigo='mod_rechazada')
                 solicitud.save()
+
                 updated += 1
+
         self.message_user(request, f"❌ {updated} modificación(es) rechazadas.")
 
+    # ---- SAVE MODEL ----
     def save_model(self, request, obj, form, change):
         estado_cambiado = 'estado_mod' in form.changed_data
         admin_monto_cambiado = 'admin_monto_propuesto' in form.changed_data
 
         old_admin_monto = None
         old_aceptada = False
+
         if change:
             try:
                 old_obj = Modificacion.objects.get(pk=obj.pk)
                 old_admin_monto = old_obj.admin_monto_propuesto
                 old_aceptada = old_obj.estado_mod == 'aceptada'
             except Modificacion.DoesNotExist:
-                old_admin_monto = None
-                old_aceptada = False
+                pass
 
         new_aceptada = obj.estado_mod == 'aceptada'
         obj.aceptada = new_aceptada
+
         if new_aceptada and not old_aceptada:
             obj.fecha_aceptacion = timezone.now()
         elif not new_aceptada:
@@ -259,15 +335,14 @@ class ModificacionAdmin(admin.ModelAdmin):
             old_admin_monto = old_admin_monto or Decimal('0')
 
             if change and not old_aceptada and new_aceptada:
-                # La modificación se aceptó ahora: sumar el monto total de la modificación
                 pres.total = current_total + new_admin_monto
                 pres.save()
+
             elif change and old_aceptada and not new_aceptada:
-                # La modificación dejó de estar aceptada: restar el monto anterior
                 pres.total = current_total - old_admin_monto
                 pres.save()
+
             elif change and admin_monto_cambiado and new_admin_monto != old_admin_monto:
-                # El precio de la modificación cambió: ajustar la diferencia
                 pres.total = current_total + (new_admin_monto - old_admin_monto)
                 pres.save()
 
@@ -278,19 +353,18 @@ class ModificacionAdmin(admin.ModelAdmin):
                 'aceptada': 'mod_aceptada',
                 'rechazada': 'mod_rechazada',
             }
+
             nuevo = mapping.get(obj.estado_mod)
+
             if nuevo:
                 solicitud = obj.solicitud
-                solicitud.estado = nuevo
+                solicitud.estado_actual = Estado.objects.get(codigo=nuevo)
                 solicitud.save()
 
 
-@admin.register(Servicio)
-class ServicioAdmin(admin.ModelAdmin):
-    list_display = ('titulo',)
-    inlines = [ImagenServicioInline]
-
-
+# ----------------------------
+#  ADMIN PARA VISITAS
+# ----------------------------
 @admin.register(Visita)
 class VisitaAdmin(admin.ModelAdmin):
     list_display = (
@@ -307,6 +381,7 @@ class VisitaAdmin(admin.ModelAdmin):
     list_filter = ('estado', 'creado')
     search_fields = ('codigo', 'nombre', 'email', 'rut', 'telefono')
     readonly_fields = ('codigo', 'creado')
+
     fieldsets = (
         ('Información del cliente', {
             'fields': ('codigo', 'nombre', 'rut', 'email', 'telefono')

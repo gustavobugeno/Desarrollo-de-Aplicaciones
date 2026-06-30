@@ -1,0 +1,25 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block contenido %}
+<div class="estado-card">
+    <h2>Solicitud revisada - Asignar experto</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        <label>Nombre del experto:</label>
+        <input type="text" name="experto_nombre" required>
+
+        <label>Email del experto:</label>
+        <input type="email" name="experto_email" required>
+
+        <label>Teléfono del experto:</label>
+        <input type="text" name="experto_telefono">
+
+        <button type="submit" class="btn btn-success">Asignar experto</button>
+    </form>
+
+    <div class="acciones">
+        <a href="{% url 'retroceder_estado' solicitud.id %}" class="btn btn-warning">Volver atrás</a>
+        <a href="{% url 'admin_solicitudes' %}" class="btn btn-secondary">Volver</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,148 @@
 from django.http import HttpResponse
 from django.contrib.auth.models import User
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+
+# MODELOS
+from core.models import SolicitudInformacion, Servicio, Estado
+
+
+# ============================
+# PANEL ADMIN
+# ============================
+
+@login_required
+def dashboard(request):
+    return render(request, "admin_panel/dashboard.html")
+
+
+@login_required
+def ordenar_estados(request):
+    return render(request, "admin_panel/ordenar_estados.html")
+
+
+@login_required
+def editar_estado(request):
+    return render(request, "admin_panel/estados/editar_estado.html")
+
+
+@login_required
+def eliminar_estado(request):
+    return render(request, "admin_panel/estados/eliminar_estado.html")
+
+
+@login_required
+def estado_1(request):
+    return render(request, "admin_panel/estados/estado_1.html")
+
+
+@login_required
+def estado_2(request):
+    return render(request, "admin_panel/estados/estado_2.html")
+
+
+# ============================
+# CRUD SOLICITUDES
+# ============================
+
+@login_required
+def admin_solicitudes(request):
+    solicitudes = SolicitudInformacion.objects.all().order_by('-fecha_envio')
+    return render(request, "admin_panel/solicitudes/listar.html", {
+        "solicitudes": solicitudes
+    })
+
+
+@login_required
+def admin_solicitud_detalle(request, id):
+    solicitud = get_object_or_404(SolicitudInformacion, id=id)
+    return render(request, "admin_panel/solicitudes/detalle.html", {
+        "solicitud": solicitud
+    })
+
+
+@login_required
+def admin_solicitud_editar(request, id):
+    solicitud = get_object_or_404(SolicitudInformacion, id=id)
+    estados = Estado.objects.filter(activo=True).order_by("orden")
+
+    if request.method == "POST":
+        solicitud.nombre = request.POST.get("nombre")
+        solicitud.email = request.POST.get("email")
+        solicitud.telefono = request.POST.get("telefono")
+        solicitud.ubicacion = request.POST.get("ubicacion")
+        solicitud.cuando_comenzar = request.POST.get("cuando_comenzar")
+        solicitud.requerimientos = request.POST.get("requerimientos")
+
+        nuevo_estado_id = request.POST.get("estado_actual")
+        if nuevo_estado_id:
+            solicitud.estado_actual = Estado.objects.get(id=nuevo_estado_id)
+
+        solicitud.save()
+        return redirect("admin_solicitudes")
+
+    return render(request, "admin_panel/solicitudes/editar.html", {
+        "solicitud": solicitud,
+        "estados": estados,
+    })
+
+
+@login_required
+def admin_solicitud_eliminar(request, id):
+    solicitud = get_object_or_404(SolicitudInformacion, id=id)
+    solicitud.delete()
+    return redirect("admin_solicitudes")
+
+
+# ============================
+# CRUD SERVICIOS
+# ============================
+
+@login_required
+def admin_servicios(request):
+    servicios = Servicio.objects.all()
+    return render(request, "admin_panel/servicios/listar.html", {
+        "servicios": servicios
+    })
+
+
+@login_required
+def crear_servicio(request):
+    if request.method == "POST":
+        Servicio.objects.create(
+            titulo=request.POST.get("titulo"),
+            descripcion=request.POST.get("descripcion"),
+        )
+        return redirect("admin_servicios")
+
+    return render(request, "admin_panel/servicios/crear.html")
+
+
+@login_required
+def editar_servicio(request, id):
+    servicio = get_object_or_404(Servicio, id=id)
+
+    if request.method == "POST":
+        servicio.titulo = request.POST.get("titulo")
+        servicio.descripcion = request.POST.get("descripcion")
+        servicio.save()
+        return redirect("admin_servicios")
+
+    return render(request, "admin_panel/servicios/editar.html", {
+        "servicio": servicio
+    })
+
+
+@login_required
+def eliminar_servicio(request, id):
+    servicio = get_object_or_404(Servicio, id=id)
+    servicio.delete()
+    return redirect("admin_servicios")
+
+
+# ============================
+# CREAR ADMIN
+# ============================
 
 def create_admin(request):
     if User.objects.filter(username="admin").exists():
@@ -11,3 +154,217 @@ def create_admin(request):
         email="admin@example.com"
     )
     return HttpResponse("Superusuario creado correctamente.")
+
+
+# ============================
+# FLUJO DE ESTADOS
+# ============================
+
+@login_required
+def flujo_solicitud(request, id):
+    solicitud = get_object_or_404(SolicitudInformacion, id=id)
+    estado = solicitud.estado_actual
+
+    if not estado:
+        estado = Estado.objects.filter(activo=True).order_by('orden').first()
+        solicitud.estado_actual = estado
+        solicitud.save()
+
+    return render(request, f"estados/{estado.template}", {
+        "solicitud": solicitud,
+        "estado": estado
+    })
+
+
+@login_required
+def avanzar_estado(request, id):
+    solicitud = get_object_or_404(SolicitudInformacion, id=id)
+    estado_actual = solicitud.estado_actual
+
+    siguiente = Estado.objects.filter(
+        orden__gt=estado_actual.orden,
+        activo=True
+    ).order_by('orden').first()
+
+    if siguiente:
+        solicitud.estado_actual = siguiente
+        solicitud.save()
+
+    if siguiente.codigo == "revisada":
+        return redirect("asignar_experto", id=id)
+
+    if siguiente.codigo == "asignada":
+        return redirect("subir_cotizacion", id=id)
+
+    if siguiente.codigo == "enviada":
+        return redirect("esperar_respuesta_cliente", id=id)
+
+    return redirect("flujo_solicitud", id=id)
+
+
+@login_required
+def retroceder_estado(request, id):
+    solicitud = get_object_or_404(SolicitudInformacion, id=id)
+    estado_actual = solicitud.estado_actual
+
+    anterior = Estado.objects.filter(
+        orden__lt=estado_actual.orden,
+        activo=True
+    ).order_by('-orden').first()
+
+    if anterior:
+        solicitud.estado_actual = anterior
+        solicitud.save()
+
+    return redirect("flujo_solicitud", id=id)
+
+
+# ============================
+# ESTADO 2 — ASIGNAR EXPERTO
+# ============================
+
+@login_required
+def asignar_experto(request, id):
+    solicitud = get_object_or_404(SolicitudInformacion, id=id)
+
+    if request.method == "POST":
+        solicitud.experto_nombre = request.POST.get("experto_nombre")
+        solicitud.experto_email = request.POST.get("experto_email")
+        solicitud.experto_telefono = request.POST.get("experto_telefono")
+
+        # ✅ Cambiar al siguiente estado automáticamente
+        siguiente = Estado.objects.filter(
+            orden__gt=solicitud.estado_actual.orden,
+            activo=True
+        ).order_by('orden').first()
+
+        if siguiente:
+            solicitud.estado_actual = siguiente
+
+        solicitud.save()
+
+        # ✅ Redirigir al flujo para mostrar el nuevo template
+        return redirect("flujo_solicitud", id=id)
+
+    return render(request, "estados/revisada.html", {"solicitud": solicitud})
+
+
+# ============================
+# ESTADO 3 — SUBIR COTIZACIÓN
+# ============================
+
+@login_required
+def subir_cotizacion(request, id):
+    solicitud = get_object_or_404(SolicitudInformacion, id=id)
+
+    if request.method == "POST":
+        solicitud.cotizacion_pdf = request.FILES.get("cotizacion_pdf")
+        solicitud.monto = request.POST.get("monto")
+        solicitud.tiempo_estimado = request.POST.get("tiempo_estimado")
+
+        # ✅ Cambiar al siguiente estado automáticamente
+        siguiente = Estado.objects.filter(
+            orden__gt=solicitud.estado_actual.orden,
+            activo=True
+        ).order_by('orden').first()
+
+        if siguiente:
+            solicitud.estado_actual = siguiente
+
+        solicitud.save()
+
+        # ✅ Mostrar el template del nuevo estado
+        return redirect("flujo_solicitud", id=id)
+
+    return render(request, "estados/asignada.html", {"solicitud": solicitud})
+
+# ============================
+# ESTADO 5 — RESPUESTA CLIENTE
+# ============================
+
+@login_required
+def esperar_respuesta_cliente(request, id):
+    solicitud = get_object_or_404(SolicitudInformacion, id=id)
+    return render(request, "estados/enviada.html", {"solicitud": solicitud})
+
+
+def aceptar_cotizacion(request, id):
+    solicitud = get_object_or_404(SolicitudInformacion, id=id)
+    solicitud.estado_actual = Estado.objects.get(codigo="aceptada")
+    solicitud.save()
+    return redirect("flujo_solicitud", id=id)
+
+
+def rechazar_cotizacion(request, id):
+    solicitud = get_object_or_404(SolicitudInformacion, id=id)
+    solicitud.estado_actual = Estado.objects.get(codigo="rechazada")
+    solicitud.save()
+    return redirect("flujo_solicitud", id=id)
+
+
+# ============================
+# ESTADO 6 — PAGO INICIAL
+# ============================
+
+@login_required
+def pago_inicial(request, id):
+    solicitud = get_object_or_404(SolicitudInformacion, id=id)
+
+    if request.method == "POST":
+        solicitud.pago_inicial_archivo = request.FILES.get("pago_inicial")
+        solicitud.pago_inicial_monto = request.POST.get("monto_pagado")
+        solicitud.save()
+        return redirect("avanzar_estado", id=id)
+
+    return render(request, "estados/aceptada.html", {"solicitud": solicitud})
+
+
+# ============================
+# ESTADO 7 — CONFIRMAR PAGO
+# ============================
+
+@login_required
+def confirmar_pago_inicial(request, id):
+    return redirect("avanzar_estado", id=id)
+
+
+# ============================
+# ESTADO 8 — EN EJECUCIÓN
+# ============================
+
+@login_required
+def en_ejecucion(request, id):
+    solicitud = get_object_or_404(SolicitudInformacion, id=id)
+
+    if request.method == "POST":
+        solicitud.avance_archivo = request.FILES.get("avance")
+        solicitud.avance_comentarios = request.POST.get("comentarios")
+        solicitud.save()
+
+    return render(request, "estados/en_ejecucion.html", {"solicitud": solicitud})
+
+
+# ============================
+# ESTADO 9 — ENTREGA
+# ============================
+
+@login_required
+def confirmar_entrega(request, id):
+    return redirect("avanzar_estado", id=id)
+
+
+# ============================
+# ESTADO 10 — PAGO FINAL
+# ============================
+
+@login_required
+def pago_final(request, id):
+    solicitud = get_object_or_404(SolicitudInformacion, id=id)
+
+    if request.method == "POST":
+        solicitud.pago_final_archivo = request.FILES.get("pago_final")
+        solicitud.pago_final_monto = request.POST.get("monto_final")
+        solicitud.save()
+        return redirect("flujo_solicitud", id=id)
+
+    return render(request, "estados/pagada.html", {"solicitud": solicitud})

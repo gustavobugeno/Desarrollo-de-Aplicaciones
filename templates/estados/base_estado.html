@@ -1,0 +1,21 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block contenido %}
+<h1>{{ titulo }}</h1>
+
+<div class="estado-box">
+    <p><strong>Código:</strong> {{ solicitud.codigo_seguimiento }}</p>
+    <p><strong>Cliente:</strong> {{ solicitud.nombre }}</p>
+    <p><strong>Email:</strong> {{ solicitud.email }}</p>
+    <p><strong>Teléfono:</strong> {{ solicitud.telefono }}</p>
+    <p><strong>Ubicación:</strong> {{ solicitud.ubicacion }}</p>
+    <p><strong>Requerimientos:</strong> {{ solicitud.requerimientos }}</p>
+    <p><strong>Estado actual:</strong> {{ estado.nombre }}</p>
+</div>
+
+<div class="acciones">
+    <a href="{% url 'avanzar_estado' solicitud.id %}" class="btn">Continuar al siguiente paso</a>
+    <a href="{% url 'admin_solicitudes' %}" class="btn-secondary">Volver al panel</a>
+</div>
+
+{% endblock %}

@@ -1,0 +1,9 @@
+<ul id="lista-estados" class="lista-estados">
+    {% for e in estados %}
+    <li draggable="true" data-id="{{ e.id }}">
+        {{ e.nombre }}
+    </li>
+    {% endfor %}
+</ul>
+
+<button id="guardar-orden" class="boton-primario">Guardar orden</button>

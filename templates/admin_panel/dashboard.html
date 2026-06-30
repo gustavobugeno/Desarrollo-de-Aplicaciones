@@ -1,0 +1,17 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block contenido %}
+<h1>Dashboard del Administrador</h1>
+<p>Bienvenido al panel de control. Desde aquí puedes gestionar:</p>
+<ul>
+    <li>Solicitudes de clientes</li>
+    <li>Estados del flujo</li>
+    <li>Orden de estados</li>
+    <li>Progreso de usuarios</li>
+</ul>
+<hr>
+<h2>Accesos rápidos</h2>
+<a href="{% url 'admin_solicitudes' %}" class="boton-primario">Ver solicitudes</a>
+<a href="{% url 'admin_ordenar_estados' %}" class="boton-primario">Ordenar estados</a>
+<a href="{% url 'admin_estado_1' %}" class="boton-primario">Estado 1</a>
+<a href="{% url 'admin_estado_2' %}" class="boton-primario">Estado 2</a>
+{% endblock %}

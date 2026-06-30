@@ -5,6 +5,10 @@ from .models import Servicio, SolicitudInformacion, Presupuesto, Visita
 from .forms import SolicitarInfoForm, ModificacionForm, AgendarVisitaForm
 from django.http import HttpResponse
 from django.shortcuts import redirect
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login
+from django.shortcuts import render
+from django.contrib.auth import logout
 def test_storage(request):
     return HttpResponse(settings.DEFAULT_FILE_STORAGE)
 # ----------------------------
@@ -138,6 +142,9 @@ def seguimiento(request, codigo):
     codigo = codigo.strip()
     solicitud = get_object_or_404(SolicitudInformacion, codigo_seguimiento=codigo)
 
+    # Obtener el código del estado actual
+    estado_codigo = solicitud.estado_actual.codigo if solicitud.estado_actual else "no_revisada"
+
     estado_map = {
         'no_revisada': 1,
         'revisada': 2,
@@ -159,9 +166,12 @@ def seguimiento(request, codigo):
         'cotizada': 'Sin trabajo iniciado',
         'enviada': 'Sin trabajo iniciado',
         'aceptada': 'Pendiente de pago inicial',
+
+        # estados de modificación
         'mod_creada': 'Pendiente de pago inicial',
         'mod_en_revision': 'Pendiente de pago inicial',
         'mod_aceptada': 'Pendiente de pago inicial',
+
         'pago_inicial': 'Pago inicial pendiente',
         'en_ejecucion': 'En ejecución',
         'completado': 'Trabajo completado',
@@ -169,16 +179,22 @@ def seguimiento(request, codigo):
         'rechazada': 'Solicitud rechazada',
     }
 
-    estado_num = estado_map.get(solicitud.estado, 0)
-    estado_trabajo = trabajo_estado_map.get(solicitud.estado, 'Sin trabajo iniciado')
-    trabajo_comenzado = solicitud.estado in ['pago_inicial', 'en_ejecucion', 'completado', 'pagada'] or solicitud.progreso_trabajo > 0
+    estado_num = estado_map.get(estado_codigo, 0)
+    estado_trabajo = trabajo_estado_map.get(estado_codigo, 'Sin trabajo iniciado')
+
+    trabajo_comenzado = (
+        estado_codigo in ['pago_inicial', 'en_ejecucion', 'completado', 'pagada']
+        or solicitud.progreso_trabajo > 0
+    )
+
     presupuesto = getattr(solicitud, 'presupuesto', None)
-    # Obtener la última modificación (si existe) para mostrar su estado
+
     ultima_modificacion = solicitud.modificaciones.order_by('-creado').first()
 
     return render(request, "seguimiento.html", {
         "solicitud": solicitud,
-        "estado": estado_num,
+        "estado_codigo": estado_codigo,
+        "estado_num": estado_num,
         "estado_trabajo": estado_trabajo,
         "trabajo_comenzado": trabajo_comenzado,
         "presupuesto": presupuesto,
@@ -361,3 +377,19 @@ def pago_final_completado(request, codigo):
         "presupuesto": presupuesto,
         "monto_final": monto_final
     })
+
+def login_view(request):
+    if request.method == "POST":
+        form = AuthenticationForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('admin_dashboard')
+    else:
+        form = AuthenticationForm()
+
+    return render(request, "login.html", {"form": form})
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')

@@ -1,0 +1,12 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block contenido %}
+<div class="estado-card">
+    <h2>Solicitud rechazada</h2>
+
+    <p>El cliente rechazó la cotización. La solicitud está finalizada.</p>
+
+    <div class="acciones">
+        <a href="{% url 'admin_solicitudes' %}" class="btn btn-secondary">Volver al panel</a>
+    </div>
+</div>
+{% endblock %}

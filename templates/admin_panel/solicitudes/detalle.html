@@ -1,0 +1,15 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block contenido %}
+<h1>Detalle de Solicitud</h1>
+
+<p><strong>Código:</strong> {{ solicitud.codigo_seguimiento }}</p>
+<p><strong>Nombre:</strong> {{ solicitud.nombre }}</p>
+<p><strong>Email:</strong> {{ solicitud.email }}</p>
+<p><strong>Teléfono:</strong> {{ solicitud.telefono }}</p>
+<p><strong>Ubicación:</strong> {{ solicitud.ubicacion }}</p>
+<p><strong>Requerimientos:</strong> {{ solicitud.requerimientos }}</p>
+<p><strong>Estado:</strong> {{ solicitud.get_estado_display }}</p>
+
+<a href="{% url 'admin_solicitud_editar' solicitud.id %}">Editar</a>
+{% endblock %}
