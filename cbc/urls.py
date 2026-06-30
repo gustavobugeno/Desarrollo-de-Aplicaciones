@@ -4,6 +4,11 @@ from core import views, views_admin
 from django.conf import settings
 from django.conf.urls.static import static
 from core.views import login_view, logout_view, test_storage
+from core.views import confirmar_pago_inicial_cliente
+
+# IMPORTANTE: agregar esta línea
+from core.views_admin import enviar_cotizacion
+
 urlpatterns = [
     # Django Admin
     path('admin/', admin.site.urls),
@@ -46,6 +51,9 @@ urlpatterns = [
     # ESTADO 3 — Subir cotización
     path("panel/solicitudes/<int:id>/subir-cotizacion/", views_admin.subir_cotizacion, name="subir_cotizacion"),
 
+    # ESTADO 4 — Enviar cotización (corregido)
+    path("panel/solicitudes/<int:id>/enviar-cotizacion/", enviar_cotizacion, name="enviar_cotizacion"),
+
     # ESTADO 5 — Respuesta del cliente
     path("panel/solicitudes/<int:id>/respuesta/", views_admin.esperar_respuesta_cliente, name="esperar_respuesta_cliente"),
     path("panel/solicitudes/<int:id>/aceptar/", views_admin.aceptar_cotizacion, name="aceptar_cotizacion"),
@@ -54,6 +62,7 @@ urlpatterns = [
     # ESTADO 6 — Pago inicial
     path("panel/solicitudes/<int:id>/pago-inicial/", views_admin.pago_inicial, name="pago_inicial"),
     path("panel/solicitudes/<int:id>/confirmar-pago-inicial/", views_admin.confirmar_pago_inicial, name="confirmar_pago_inicial"),
+    path('seguimiento/<str:codigo>/confirmar-pago-inicial/', confirmar_pago_inicial_cliente, name='confirmar_pago_inicial_cliente'),
 
     # ESTADO 8 — En ejecución
     path("panel/solicitudes/<int:id>/ejecucion/", views_admin.en_ejecucion, name="en_ejecucion"),
@@ -63,7 +72,8 @@ urlpatterns = [
 
     # ESTADO 10 — Pago final
     path("panel/solicitudes/<int:id>/pago-final/", views_admin.pago_final, name="pago_final"),
-
+    path("seguimiento/<str:codigo>/pago-final/", views_admin.pago_final_cliente, name="pago_final_cliente"),
+    path("panel/solicitudes/<int:id>/finalizar/",views_admin.finalizar_solicitud,name="finalizar_solicitud"),
     # ============================
     # SEGUIMIENTO CLIENTE (NO ADMIN)
     # ============================
@@ -81,6 +91,7 @@ urlpatterns = [
     path('seguimiento/<str:codigo>/pago-final/', views.pago_final, name='pago_final'),
     path('seguimiento/<str:codigo>/procesar-pago-final/', views.procesar_pago_final, name='procesar_pago_final'),
     path('seguimiento/<str:codigo>/pago-final-completado/', views.pago_final_completado, name='pago_final_completado'),
+    path( "panel/solicitudes/<int:id>/finalizar/", views_admin.finalizar_solicitud,name="finalizar_solicitud"),
 
     # ============================
     # PANEL ADMIN - CONFIG

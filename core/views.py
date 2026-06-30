@@ -4,13 +4,13 @@ from django.conf import settings
 from .models import Servicio, SolicitudInformacion, Presupuesto, Visita
 from .forms import SolicitarInfoForm, ModificacionForm, AgendarVisitaForm
 from django.http import HttpResponse
-from django.shortcuts import redirect
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login
-from django.shortcuts import render
-from django.contrib.auth import logout
+from django.contrib.auth import login, logout
+from core.models import Estado
+
 def test_storage(request):
     return HttpResponse(settings.DEFAULT_FILE_STORAGE)
+
 # ----------------------------
 # VISTA INICIO
 # ----------------------------
@@ -24,13 +24,11 @@ def servicios(request):
     servicios = Servicio.objects.all()
     return render(request, 'servicios.html', {'servicios': servicios})
 
-
 # ----------------------------
 # VISTA CONTACTO
 # ----------------------------
 def contacto(request):
     return render(request, 'contacto.html')
-
 
 # ----------------------------
 # VISTA AGENDAR VISITA
@@ -48,6 +46,7 @@ def agendar_visita(request):
                 fecha_inicio_preferido=datos['fecha_inicio_preferido'],
                 fecha_fin_preferido=datos['fecha_fin_preferido'],
             )
+
             mensaje = (
                 f"Nueva solicitud de visita:\n\n"
                 f"Código: {visita.codigo}\n"
@@ -55,8 +54,10 @@ def agendar_visita(request):
                 f"RUT: {visita.rut}\n"
                 f"Correo: {visita.email}\n"
                 f"Teléfono: {visita.telefono}\n"
-                f"Rango preferido: {visita.fecha_inicio_preferido.strftime('%d/%m/%Y')} - {visita.fecha_fin_preferido.strftime('%d/%m/%Y')}\n"
+                f"Rango preferido: {visita.fecha_inicio_preferido.strftime('%d/%m/%Y')} - "
+                f"{visita.fecha_fin_preferido.strftime('%d/%m/%Y')}\n"
             )
+
             send_mail(
                 subject="Agendamiento de visita - CBC E.I.R.L.",
                 message=mensaje,
@@ -64,31 +65,25 @@ def agendar_visita(request):
                 recipient_list=['cbc_web@hotmail.com'],
                 fail_silently=True,
             )
+
             return redirect('visita_estado', codigo=visita.codigo)
     else:
         form = AgendarVisitaForm()
 
-    return render(request, 'agendar_visita.html', {
-        'form': form,
-    })
-
+    return render(request, 'agendar_visita.html', {'form': form})
 
 # ----------------------------
 # VISTA ESTADO DE VISITA
 # ----------------------------
 def visita_estado(request, codigo):
     visita = get_object_or_404(Visita, codigo=codigo)
-    return render(request, 'visita_estado.html', {
-        'visita': visita,
-    })
-
+    return render(request, 'visita_estado.html', {'visita': visita})
 
 # ----------------------------
 # VISTA GRACIAS
 # ----------------------------
 def gracias(request):
     return render(request, 'gracias.html')
-
 
 # ----------------------------
 # VISTA SOLICITAR INFORMACION
@@ -124,37 +119,55 @@ def solicitar_info(request, servicio_id):
             )
 
             return redirect('seguimiento', codigo=solicitud.codigo_seguimiento)
-        else:
-            print("Errores del formulario:", form.errors)
     else:
         form = SolicitarInfoForm()
 
-    return render(request, 'solicitar_info.html', {
-        'form': form,
-        'servicio': servicio
-    })
-
+    return render(request, 'solicitar_info.html', {'form': form, 'servicio': servicio})
 
 # ----------------------------
-# VISTA SEGUIMIENTO (por código)
+# VISTA SEGUIMIENTO
 # ----------------------------
 def seguimiento(request, codigo):
     codigo = codigo.strip()
-    solicitud = SolicitudInformacion.objects.filter(codigo_seguimiento=codigo).select_related('servicio').prefetch_related('modificaciones').first()
+    solicitud = SolicitudInformacion.objects.filter(
+        codigo_seguimiento=codigo
+    ).select_related('servicio').prefetch_related('modificaciones').first()
 
     if solicitud is None:
-        return render(request, "seguimiento_no_encontrado.html", {
-            "codigo": codigo,
-        }, status=404)
+        return render(request, "seguimiento_no_encontrado.html", {"codigo": codigo}, status=404)
 
-    # Obtener el código del estado actual
-    estado_codigo = solicitud.estado_actual.codigo if solicitud.estado_actual else "no_revisada"
+    # ============================
+    # MAPEO DE ESTADOS PANEL → CLIENTE
+    # ============================
+    MAPEO_ESTADOS = {
+        "no_revisada": "recibida",
+        "revisada": "asignacion_experto",
+        "asignada": "experto_asignado",
+        "cotizada": "presupuesto_creado",
+        "enviada": "enviada",
+        "aceptada": "aceptada",
+        "pago_inicial": "pago_inicial",
+        "en_ejecucion": "en_ejecucion",
+        "completado": "completado",
+        "pagada": "pagada",
+        "rechazada": "rechazada",
+        "en_revision": "en_revision",
+    }
 
+    # Estado del panel admin
+    estado_panel = solicitud.estado_actual.codigo if solicitud.estado_actual else "no_revisada"
+
+    # Estado traducido para el cliente
+    estado_codigo = MAPEO_ESTADOS.get(estado_panel, "recibida")
+
+    # ============================
+    # MAPEO DE PASOS (1–10)
+    # ============================
     estado_map = {
-        'no_revisada': 1,
-        'revisada': 2,
-        'asignada': 3,
-        'cotizada': 4,
+        'recibida': 1,
+        'asignacion_experto': 2,
+        'experto_asignado': 3,
+        'presupuesto_creado': 4,
         'enviada': 5,
         'aceptada': 6,
         'pago_inicial': 7,
@@ -162,29 +175,29 @@ def seguimiento(request, codigo):
         'completado': 9,
         'pagada': 10,
         'rechazada': 0,
+        'en_revision': 5,
     }
 
+    estado_num = estado_map.get(estado_codigo, 0)
+
+    # ============================
+    # ESTADO DEL TRABAJO
+    # ============================
     trabajo_estado_map = {
-        'no_revisada': 'Sin trabajo iniciado',
-        'revisada': 'Sin trabajo iniciado',
-        'asignada': 'Sin trabajo iniciado',
-        'cotizada': 'Sin trabajo iniciado',
+        'recibida': 'Sin trabajo iniciado',
+        'asignacion_experto': 'Sin trabajo iniciado',
+        'experto_asignado': 'Sin trabajo iniciado',
+        'presupuesto_creado': 'Sin trabajo iniciado',
         'enviada': 'Sin trabajo iniciado',
         'aceptada': 'Pendiente de pago inicial',
-
-        # estados de modificación
-        'mod_creada': 'Pendiente de pago inicial',
-        'mod_en_revision': 'Pendiente de pago inicial',
-        'mod_aceptada': 'Pendiente de pago inicial',
-
         'pago_inicial': 'Pago inicial pendiente',
         'en_ejecucion': 'En ejecución',
         'completado': 'Trabajo completado',
         'pagada': 'Pago final completado',
         'rechazada': 'Solicitud rechazada',
+        'en_revision': 'Solicitud en revisión',
     }
 
-    estado_num = estado_map.get(estado_codigo, 0)
     estado_trabajo = trabajo_estado_map.get(estado_codigo, 'Sin trabajo iniciado')
 
     trabajo_comenzado = (
@@ -192,16 +205,22 @@ def seguimiento(request, codigo):
         or solicitud.progreso_trabajo > 0
     )
 
+    # ============================
+    # PRESUPUESTO Y MODIFICACIONES
+    # ============================
     presupuesto = getattr(solicitud, 'presupuesto', None)
-
     ultima_modificacion = solicitud.modificaciones.order_by('-creado').first()
     modificaciones = solicitud.modificaciones.order_by('-creado')
-    revision_activa = bool(ultima_modificacion and ultima_modificacion.estado_mod in ['en_revision', 'mod_en_revision'])
+
+    revision_activa = bool(
+        ultima_modificacion and ultima_modificacion.estado_mod in ['en_revision', 'mod_en_revision']
+    )
 
     return render(request, "seguimiento.html", {
         "solicitud": solicitud,
         "estado_codigo": estado_codigo,
         "estado_num": estado_num,
+        "estado": estado_num,
         "estado_trabajo": estado_trabajo,
         "trabajo_comenzado": trabajo_comenzado,
         "presupuesto": presupuesto,
@@ -209,9 +228,8 @@ def seguimiento(request, codigo):
         "modificaciones": modificaciones,
         "revision_activa": revision_activa,
     })
-
 # ----------------------------
-# VISTA INTERMEDIA PARA FORMULARIO DE SEGUIMIENTO
+# VISTA INTERMEDIA
 # ----------------------------
 def seguimiento_base(request):
     codigo = request.GET.get('codigo', '').strip()
@@ -224,7 +242,9 @@ def seguimiento_base(request):
 
     return redirect('inicio')
 
-
+# ----------------------------
+# SOLICITAR MODIFICACIÓN
+# ----------------------------
 def solicitar_modificacion(request, codigo):
     solicitud = get_object_or_404(SolicitudInformacion, codigo_seguimiento=codigo)
     presupuesto = getattr(solicitud, 'presupuesto', None)
@@ -235,22 +255,13 @@ def solicitar_modificacion(request, codigo):
             mod = form.save(commit=False)
             mod.solicitud = solicitud
             mod.presupuesto = presupuesto
-            # Cliente no define monto; admin lo propondrá desde el panel
             mod.save()
-            # marcar la solicitud principal como modificacion creada
-            solicitud.estado = 'mod_creada'
+
+            solicitud.estado_actual = None  # si quieres manejar estados de modificación
             solicitud.save()
-            # Opcional: notificar al admin o al correo del negocio
-            if settings.EMAIL_HOST_USER:
-                asunto = f"Nueva solicitud de modificación - {solicitud.codigo_seguimiento}"
-                mensaje = (
-                    f"Se ha recibido una nueva solicitud de modificación:\n\n{mod.descripcion}\n\n"
-                    "El administrador realizará una propuesta de precio y la validará."
-                )
-                send_mail(asunto, mensaje, settings.EMAIL_HOST_USER, [settings.EMAIL_HOST_USER], fail_silently=True)
+
             return redirect('seguimiento', codigo=codigo)
     else:
-        # Pre-fill contact data from la solicitud
         form = ModificacionForm(initial={
             'contacto_nombre': solicitud.nombre,
             'contacto_email': solicitud.email,
@@ -262,103 +273,108 @@ def solicitar_modificacion(request, codigo):
         'presupuesto': presupuesto,
         'form': form,
     })
+
+# ----------------------------
+# APROBAR / RECHAZAR
+# ----------------------------
 def aprobar_solicitud(request, codigo):
     solicitud = get_object_or_404(SolicitudInformacion, codigo_seguimiento=codigo)
-    solicitud.estado = 'aceptada'
+    solicitud.estado_actual = Estado.objects.get(codigo="aceptada")
     solicitud.save()
     return redirect('pago_inicial', codigo=codigo)
 
 def rechazar_solicitud(request, codigo):
     solicitud = get_object_or_404(SolicitudInformacion, codigo_seguimiento=codigo)
-    solicitud.estado = 'rechazada'
+    solicitud.estado_actual = Estado.objects.get(codigo="rechazada")
     solicitud.save()
     return redirect('seguimiento', codigo=codigo)
 
+# ----------------------------
+# SOLICITAR CAMBIOS
+# ----------------------------
 def solicitar_cambios(request, codigo):
     solicitud = get_object_or_404(SolicitudInformacion, codigo_seguimiento=codigo)
 
     if request.method == "POST":
         comentarios = request.POST.get("comentarios", "")
         solicitud.comentarios_cambios = comentarios
-        solicitud.estado = 'en_revision'  # Nuevo estado
+        solicitud.estado_actual = Estado.objects.get(codigo="en_revision")
         solicitud.save()
         return redirect('seguimiento', codigo=codigo)
 
     return render(request, "solicitar_cambios.html", {"solicitud": solicitud})
 
-
 # ----------------------------
-# VISTA PAGO INICIAL (50%)
+# PAGO INICIAL
 # ----------------------------
 def pago_inicial(request, codigo):
     solicitud = get_object_or_404(SolicitudInformacion, codigo_seguimiento=codigo)
-    
-    if solicitud.estado != 'aceptada':
+
+    if solicitud.estado_actual.codigo != 'aceptada':
         return redirect('seguimiento', codigo=codigo)
-    
+
     presupuesto = getattr(solicitud, 'presupuesto', None)
-    monto_inicial = 0
-    if presupuesto and presupuesto.total:
-        monto_inicial = presupuesto.total / 2
-    
+    monto_inicial = presupuesto.total / 2 if presupuesto and presupuesto.total else 0
+
     return render(request, "pago_inicial.html", {
         "solicitud": solicitud,
         "presupuesto": presupuesto,
         "monto_inicial": monto_inicial
     })
 
-
 def procesar_pago_inicial(request, codigo):
     solicitud = get_object_or_404(SolicitudInformacion, codigo_seguimiento=codigo)
-    
+
     if request.method == "POST":
-        # Simular procesamiento del pago
         numero_tarjeta = request.POST.get("numero_tarjeta", "")
         mes_vencimiento = request.POST.get("mes_vencimiento", "")
         ano_vencimiento = request.POST.get("ano_vencimiento", "")
         cvv = request.POST.get("cvv", "")
-        
-        # Validaciones simples
+
         if numero_tarjeta and mes_vencimiento and ano_vencimiento and cvv:
-            solicitud.estado = 'en_ejecucion'
+            solicitud.estado_actual = Estado.objects.get(codigo="pago_inicial")
             solicitud.save()
+
             return redirect('pago_completado', codigo=codigo)
-    
+
     return redirect('pago_inicial', codigo=codigo)
 
+def confirmar_pago_inicial_cliente(request, codigo):
+    solicitud = get_object_or_404(SolicitudInformacion, codigo_seguimiento=codigo)
+    solicitud.estado_actual = Estado.objects.get(codigo="en_ejecucion")
+    solicitud.save()
+    return redirect('seguimiento', codigo=codigo)
 
-def pago_completado(request, codigo):
+
+def pago_completado(request, codigo):  
     solicitud = get_object_or_404(SolicitudInformacion, codigo_seguimiento=codigo)
     presupuesto = getattr(solicitud, 'presupuesto', None)
-    
-    monto_inicial = 0
-    if presupuesto and presupuesto.total:
-        monto_inicial = presupuesto.total / 2
-    
+
+    monto_inicial = presupuesto.total / 2 if presupuesto and presupuesto.total else 0
+
     return render(request, "pago_completado.html", {
         "solicitud": solicitud,
         "presupuesto": presupuesto,
         "monto_inicial": monto_inicial
     })
 
-
+# ----------------------------
+# PAGO FINAL
+# ----------------------------
 def pago_final(request, codigo):
     solicitud = get_object_or_404(SolicitudInformacion, codigo_seguimiento=codigo)
-    
-    if solicitud.estado != 'completado' or solicitud.progreso_trabajo < 100:
+
+    if solicitud.estado_actual.codigo != 'completado' or solicitud.progreso_trabajo < 100:
         return redirect('seguimiento', codigo=codigo)
-    
+
     presupuesto = getattr(solicitud, 'presupuesto', None)
-    monto_final = 0
-    if presupuesto and presupuesto.total:
-        monto_final = presupuesto.total / 2
-    
+    monto_final = presupuesto.total / 2 if presupuesto and presupuesto.total else 0
+
     return render(request, "pago_final.html", {
         "solicitud": solicitud,
         "presupuesto": presupuesto,
         "monto_final": monto_final
     })
-
 
 def procesar_pago_final(request, codigo):
     solicitud = get_object_or_404(SolicitudInformacion, codigo_seguimiento=codigo)
@@ -370,19 +386,19 @@ def procesar_pago_final(request, codigo):
         cvv = request.POST.get("cvv", "")
 
         if numero_tarjeta and mes_vencimiento and ano_vencimiento and cvv:
-            solicitud.estado = 'pagada'
+            solicitud.estado_actual = Estado.objects.get(codigo="pagada")
             solicitud.save()
             return redirect('pago_final_completado', codigo=codigo)
 
     return redirect('pago_final', codigo=codigo)
 
 
+
 def pago_final_completado(request, codigo):
     solicitud = get_object_or_404(SolicitudInformacion, codigo_seguimiento=codigo)
     presupuesto = getattr(solicitud, 'presupuesto', None)
-    monto_final = 0
-    if presupuesto and presupuesto.total:
-        monto_final = presupuesto.total / 2
+
+    monto_final = presupuesto.total / 2 if presupuesto and presupuesto.total else 0
 
     return render(request, "pago_final_completado.html", {
         "solicitud": solicitud,
@@ -390,6 +406,9 @@ def pago_final_completado(request, codigo):
         "monto_final": monto_final
     })
 
+# ----------------------------
+# LOGIN / LOGOUT
+# ----------------------------
 def login_view(request):
     if request.method == "POST":
         form = AuthenticationForm(data=request.POST)

@@ -3,7 +3,9 @@
 <div class="estado-card">
     <h2>Experto asignado - Subir cotización</h2>
 
-    <form method="POST" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" action="{% url 'subir_cotizacion' solicitud.id %}">
+
+
         {% csrf_token %}
         <label>Archivo PDF de cotización:</label>
         <input type="file" name="cotizacion_pdf" accept="application/pdf" required>

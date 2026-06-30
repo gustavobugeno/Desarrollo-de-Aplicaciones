@@ -1,0 +1,12 @@
+{% extends "admin_panel/base_admin.html" %}
+
+{% block contenido %}
+<div class="estado-card">
+    <h2>Solicitud Finalizada</h2>
+    <p>La solicitud ha sido marcada como finalizada correctamente.</p>
+
+    <a href="{% url 'admin_solicitudes' %}" class="btn btn-primary">
+        Volver al panel
+    </a>
+</div>
+{% endblock %}

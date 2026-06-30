@@ -1149,3 +1149,88 @@ body {
     text-align: center;
   }
 }
+/* Paso 1: recibida */
+.progress-step[data-paso="1"][data-estado="recibida"] .step-indicator {
+    background: #22c55e;
+    color: white;
+}
+
+/* Paso 2: asignacion_experto o experto_asignado */
+.progress-step[data-paso="2"][data-estado="asignacion_experto"] .step-indicator,
+.progress-step[data-paso="2"][data-estado="experto_asignado"] .step-indicator {
+    background: #22c55e;
+    color: white;
+}
+
+/* Paso 3: experto_asignado o presupuesto_creado */
+.progress-step[data-paso="3"][data-estado="experto_asignado"] .step-indicator,
+.progress-step[data-paso="3"][data-estado="presupuesto_creado"] .step-indicator {
+    background: #22c55e;
+    color: white;
+}
+
+/* Paso 4: presupuesto_creado o enviada */
+.progress-step[data-paso="4"][data-estado="presupuesto_creado"] .step-indicator,
+.progress-step[data-paso="4"][data-estado="enviada"] .step-indicator {
+    background: #22c55e;
+    color: white;
+}
+
+/* Paso 5: enviada, aceptada, rechazada, en_revision */
+.progress-step[data-paso="5"][data-estado="enviada"] .step-indicator,
+.progress-step[data-paso="5"][data-estado="aceptada"] .step-indicator,
+.progress-step[data-paso="5"][data-estado="rechazada"] .step-indicator,
+.progress-step[data-paso="5"][data-estado="en_revision"] .step-indicator {
+    background: #22c55e;
+    color: white;
+}
+
+/* Paso 6: aceptada, pago_inicial, en_ejecucion */
+.progress-step[data-paso="6"][data-estado="aceptada"] .step-indicator,
+.progress-step[data-paso="6"][data-estado="pago_inicial"] .step-indicator,
+.progress-step[data-paso="6"][data-estado="en_ejecucion"] .step-indicator {
+    background: #22c55e;
+    color: white;
+}
+
+/* Paso 7: en_ejecucion o completado */
+.progress-step[data-paso="7"][data-estado="en_ejecucion"] .step-indicator,
+.progress-step[data-paso="7"][data-estado="completado"] .step-indicator {
+    background: #22c55e;
+    color: white;
+}
+
+/* Paso 8: completado o pagada */
+.progress-step[data-paso="8"][data-estado="completado"] .step-indicator,
+.progress-step[data-paso="8"][data-estado="pagada"] .step-indicator {
+    background: #22c55e;
+    color: white;
+}
+
+/* FORZAR PRIORIDAD DEL COLOR VERDE SEGÚN ESTADO */
+.progress-step[data-estado="recibida"] .step-indicator,
+.progress-step[data-estado="asignacion_experto"] .step-indicator,
+.progress-step[data-estado="experto_asignado"] .step-indicator,
+.progress-step[data-estado="presupuesto_creado"] .step-indicator,
+.progress-step[data-estado="enviada"] .step-indicator,
+.progress-step[data-estado="aceptada"] .step-indicator,
+.progress-step[data-estado="pago_inicial"] .step-indicator,
+.progress-step[data-estado="en_ejecucion"] .step-indicator,
+.progress-step[data-estado="completado"] .step-indicator,
+.progress-step[data-estado="pagada"] .step-indicator {
+    background: #22c55e !important;
+    color: white !important;
+    border-color: #22c55e !important;
+}
+
+.progress-step.completed .step-indicator {
+  background: #22c55e !important;
+  color: white !important;
+  border-color: #22c55e !important;
+}
+
+.progress-step.active .step-indicator {
+  background: linear-gradient(135deg, #2a2aff 0%, #5f4bff 100%) !important;
+  color: white !important;
+  border-color: #2a2aff !important;
+}

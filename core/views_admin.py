@@ -4,8 +4,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 
 # MODELOS
-from core.models import SolicitudInformacion, Servicio, Estado
-
+from core.models import SolicitudInformacion, Servicio, Estado, Presupuesto
 
 # ============================
 # PANEL ADMIN
@@ -176,11 +175,51 @@ def flujo_solicitud(request, id):
     })
 
 
+# ============================
+# AVANZAR ESTADO (CORREGIDO)
+# ============================
+
 @login_required
 def avanzar_estado(request, id):
     solicitud = get_object_or_404(SolicitudInformacion, id=id)
-    estado_actual = solicitud.estado_actual
+    estado = solicitud.estado_actual.codigo
 
+    # 6 — CLIENTE SUBE PAGO INICIAL
+    if estado == "aceptada":
+        solicitud.estado_actual = Estado.objects.get(codigo="pago_inicial")
+        solicitud.save()
+        return redirect("flujo_solicitud", id=id)
+
+    # 7 — ADMIN CONFIRMA PAGO INICIAL
+    if estado == "pago_inicial":
+        solicitud.estado_actual = Estado.objects.get(codigo="en_ejecucion")
+        solicitud.save()
+        return redirect("flujo_solicitud", id=id)
+
+    # 8 — ADMIN CONFIRMA ENTREGA
+    if estado == "en_ejecucion":
+        solicitud.estado_actual = Estado.objects.get(codigo="completado")
+        solicitud.save()
+        return redirect("flujo_solicitud", id=id)
+
+    # 9 — ADMIN SOLICITA PAGO FINAL
+    if estado == "completado":
+        return redirect("flujo_solicitud", id=id)
+
+    # 10 — CLIENTE SUBE PAGO FINAL
+    if estado == "pago_final":
+        solicitud.estado_actual = Estado.objects.get(codigo="pagada")
+        solicitud.save()
+        return redirect("flujo_solicitud", id=id)
+
+    # 11 — ADMIN CONFIRMA PAGO FINAL
+    if estado == "pagada":
+        solicitud.estado_actual = Estado.objects.get(codigo="finalizado")
+        solicitud.save()
+        return redirect("flujo_solicitud", id=id)
+
+    # AVANCE NORMAL
+    estado_actual = solicitud.estado_actual
     siguiente = Estado.objects.filter(
         orden__gt=estado_actual.orden,
         activo=True
@@ -190,17 +229,18 @@ def avanzar_estado(request, id):
         solicitud.estado_actual = siguiente
         solicitud.save()
 
-    if siguiente.codigo == "revisada":
-        return redirect("asignar_experto", id=id)
-
-    if siguiente.codigo == "asignada":
+    if siguiente and siguiente.codigo == "asignada":
         return redirect("subir_cotizacion", id=id)
 
-    if siguiente.codigo == "enviada":
+    if siguiente and siguiente.codigo == "enviada":
         return redirect("esperar_respuesta_cliente", id=id)
 
     return redirect("flujo_solicitud", id=id)
 
+
+# ============================
+# RETROCEDER ESTADO
+# ============================
 
 @login_required
 def retroceder_estado(request, id):
@@ -232,7 +272,6 @@ def asignar_experto(request, id):
         solicitud.experto_email = request.POST.get("experto_email")
         solicitud.experto_telefono = request.POST.get("experto_telefono")
 
-        # ✅ Cambiar al siguiente estado automáticamente
         siguiente = Estado.objects.filter(
             orden__gt=solicitud.estado_actual.orden,
             activo=True
@@ -242,8 +281,6 @@ def asignar_experto(request, id):
             solicitud.estado_actual = siguiente
 
         solicitud.save()
-
-        # ✅ Redirigir al flujo para mostrar el nuevo template
         return redirect("flujo_solicitud", id=id)
 
     return render(request, "estados/revisada.html", {"solicitud": solicitud})
@@ -258,11 +295,17 @@ def subir_cotizacion(request, id):
     solicitud = get_object_or_404(SolicitudInformacion, id=id)
 
     if request.method == "POST":
-        solicitud.cotizacion_pdf = request.FILES.get("cotizacion_pdf")
-        solicitud.monto = request.POST.get("monto")
-        solicitud.tiempo_estimado = request.POST.get("tiempo_estimado")
+        archivo = request.FILES.get("cotizacion_pdf")
+        monto = request.POST.get("monto")
+        tiempo = request.POST.get("tiempo_estimado")
 
-        # ✅ Cambiar al siguiente estado automáticamente
+        presupuesto, _ = Presupuesto.objects.get_or_create(solicitud=solicitud)
+        presupuesto.archivo = archivo
+        presupuesto.total = monto
+        presupuesto.save()
+
+        solicitud.tiempo_estimado = tiempo
+
         siguiente = Estado.objects.filter(
             orden__gt=solicitud.estado_actual.orden,
             activo=True
@@ -272,11 +315,33 @@ def subir_cotizacion(request, id):
             solicitud.estado_actual = siguiente
 
         solicitud.save()
-
-        # ✅ Mostrar el template del nuevo estado
         return redirect("flujo_solicitud", id=id)
 
     return render(request, "estados/asignada.html", {"solicitud": solicitud})
+
+
+# ============================
+# ESTADO 4 — ENVIAR COTIZACIÓN
+# ============================
+
+@login_required
+def enviar_cotizacion(request, id):
+    solicitud = get_object_or_404(SolicitudInformacion, id=id)
+
+    if request.method == "POST":
+        siguiente = Estado.objects.filter(
+            orden__gt=solicitud.estado_actual.orden,
+            activo=True
+        ).order_by('orden').first()
+
+        if siguiente:
+            solicitud.estado_actual = siguiente
+            solicitud.save()
+
+        return redirect("flujo_solicitud", id=id)
+
+    return render(request, "estados/cotizada.html", {"solicitud": solicitud})
+
 
 # ============================
 # ESTADO 5 — RESPUESTA CLIENTE
@@ -320,7 +385,7 @@ def pago_inicial(request, id):
 
 
 # ============================
-# ESTADO 7 — CONFIRMAR PAGO
+# ESTADO 7 — CONFIRMAR PAGO INICIAL
 # ============================
 
 @login_required
@@ -361,10 +426,41 @@ def confirmar_entrega(request, id):
 def pago_final(request, id):
     solicitud = get_object_or_404(SolicitudInformacion, id=id)
 
+    # Si el cliente entra a pagar, cambiar estado a "pago_final"
+    if solicitud.estado_actual.codigo == "completado":
+        solicitud.estado_actual = Estado.objects.get(codigo="pago_final")
+        solicitud.save()
+
     if request.method == "POST":
         solicitud.pago_final_archivo = request.FILES.get("pago_final")
         solicitud.pago_final_monto = request.POST.get("monto_final")
         solicitud.save()
-        return redirect("flujo_solicitud", id=id)
+        return redirect("avanzar_estado", id=id)
 
     return render(request, "estados/pagada.html", {"solicitud": solicitud})
+
+@login_required
+def pago_final_cliente(request, codigo):
+    solicitud = get_object_or_404(SolicitudInformacion, codigo_seguimiento=codigo)
+
+    if solicitud.estado_actual.codigo == "completado":
+        solicitud.estado_actual = Estado.objects.get(codigo="pago_final")
+        solicitud.save()
+
+    if request.method == "POST":
+        solicitud.pago_final_archivo = request.FILES.get("pago_final")
+        solicitud.pago_final_monto = request.POST.get("monto_final")
+        solicitud.estado_actual = Estado.objects.get(codigo="pagada")
+        solicitud.save()
+        # 🔁 Redirige al seguimiento del cliente
+        return redirect("seguimiento", codigo=codigo)
+
+    # Solo muestra el formulario si aún no se ha pagado
+    return render(request, "estados/pago_final_cliente.html", {"solicitud": solicitud})
+
+@login_required
+def finalizar_solicitud(request, id):
+    solicitud = get_object_or_404(SolicitudInformacion, id=id)
+    solicitud.estado_actual = Estado.objects.get(codigo="finalizado")
+    solicitud.save()
+    return redirect("admin_solicitudes")

@@ -14,8 +14,16 @@
         <button type="submit" class="btn btn-success">Confirmar pago final</button>
     </form>
 
-    <div class="acciones">
+    <div class="acciones" style="margin-top: 1rem; display: flex; gap: 10px;">
         <a href="{% url 'retroceder_estado' solicitud.id %}" class="btn btn-warning">Volver atrás</a>
+
+        <!-- NUEVO BOTÓN -->
+        <a href="{% url 'finalizar_solicitud' solicitud.id %}" class="btn btn-primary">
+         Dar por finalizado
+        </a>
+
+            Dar por finalizado
+        </a>
     </div>
 </div>
 {% endblock %}

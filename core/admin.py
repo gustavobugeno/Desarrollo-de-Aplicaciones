@@ -43,7 +43,6 @@ class SolicitudInformacionAdmin(admin.ModelAdmin):
     inlines = [PresupuestoInline]
     actions = ["enviar_correo_manual", "marcar_completado"]
 
-    # ---- ESTADO COLOREADO ----
     def estado_coloreado(self, obj):
         if not obj.estado_actual:
             return "Sin estado"
@@ -76,7 +75,6 @@ class SolicitudInformacionAdmin(admin.ModelAdmin):
 
     estado_coloreado.short_description = "Estado"
 
-    # ---- LIST DISPLAY ----
     list_display = (
         'codigo_seguimiento',
         'nombre',
@@ -93,7 +91,6 @@ class SolicitudInformacionAdmin(admin.ModelAdmin):
     list_filter = ('estado_actual', 'servicio', 'fecha_envio')
     ordering = ('-fecha_envio',)
 
-    # ---- FIELDSETS ----
     fieldsets = (
         ('Información del Cliente', {
             'fields': ('nombre', 'email', 'telefono', 'servicio')
@@ -110,7 +107,6 @@ class SolicitudInformacionAdmin(admin.ModelAdmin):
         }),
     )
 
-    # ---- ENVÍO AUTOMÁTICO AL CAMBIAR ESTADO ----
     def save_model(self, request, obj, form, change):
         estado_cambiado = "estado_actual" in form.changed_data
 
@@ -135,7 +131,6 @@ class SolicitudInformacionAdmin(admin.ModelAdmin):
                 fail_silently=True,
             )
 
-    # ---- ACCIÓN: MARCAR COMPLETADO ----
     @admin.action(description="Marcar solicitudes como completadas")
     def marcar_completado(self, request, queryset):
         estado_completado = Estado.objects.get(codigo='completado')
@@ -149,7 +144,6 @@ class SolicitudInformacionAdmin(admin.ModelAdmin):
 
         self.message_user(request, f"✅ {updated} solicitud(es) marcadas como completadas.")
 
-    # ---- ACCIÓN: ENVIAR CORREO MANUAL ----
     @admin.action(description="Enviar correo manual al cliente")
     def enviar_correo_manual(self, request, queryset):
         for obj in queryset:
@@ -230,7 +224,6 @@ class ModificacionAdmin(admin.ModelAdmin):
 
     descripcion_short.short_description = 'Descripción'
 
-    # ---- ACEPTAR MODIFICACIÓN ----
     @admin.action(description='Aceptar modificación y actualizar presupuesto')
     def aceptar_modificacion(self, request, queryset):
         updated = 0
@@ -265,7 +258,6 @@ class ModificacionAdmin(admin.ModelAdmin):
             f"✅ {updated} modificación(es) aceptada(s). {skipped} omitida(s)."
         )
 
-    # ---- MARCAR EN REVISIÓN ----
     @admin.action(description='Marcar modificación como En Revisión')
     def marcar_en_revision(self, request, queryset):
         updated = 0
@@ -283,7 +275,6 @@ class ModificacionAdmin(admin.ModelAdmin):
 
         self.message_user(request, f"ℹ️ {updated} modificación(es) marcadas como en revisión.")
 
-    # ---- RECHAZAR MODIFICACIÓN ----
     @admin.action(description='Rechazar modificación')
     def rechazar_modificacion(self, request, queryset):
         updated = 0
@@ -303,7 +294,6 @@ class ModificacionAdmin(admin.ModelAdmin):
 
         self.message_user(request, f"❌ {updated} modificación(es) rechazadas.")
 
-    # ---- SAVE MODEL ----
     def save_model(self, request, obj, form, change):
         estado_cambiado = 'estado_mod' in form.changed_data
         admin_monto_cambiado = 'admin_monto_propuesto' in form.changed_data
@@ -363,16 +353,9 @@ class ModificacionAdmin(admin.ModelAdmin):
                 solicitud.save()
 
 
-<<<<<<< HEAD
 # ----------------------------
 #  ADMIN PARA VISITAS
 # ----------------------------
-=======
-@admin.register(Servicio)
-class ServicioAdmin(admin.ModelAdmin):
-    list_display = ('titulo',)
-    inlines = [ImagenServicioInline]
-
 
 class VisitaAdminForm(forms.ModelForm):
     fecha_propuesta = forms.DateField(
@@ -416,7 +399,6 @@ class VisitaAdminForm(forms.ModelForm):
         return instance
 
 
->>>>>>> 084b0cd9ac34e6a8d9e97d0df0ea5ac13d506afe
 @admin.register(Visita)
 class VisitaAdmin(admin.ModelAdmin):
     form = VisitaAdminForm
@@ -459,3 +441,8 @@ class VisitaAdmin(admin.ModelAdmin):
         if obj.evidencia:
             return format_html('<a href="{}" target="_blank">Ver</a>', obj.evidencia.url)
         return 'Sin evidencia'
+
+@admin.register(Estado)
+class EstadoAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'codigo', 'orden', 'activo')
+    list_editable = ('orden', 'activo')

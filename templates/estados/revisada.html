@@ -3,7 +3,8 @@
 <div class="estado-card">
     <h2>Solicitud revisada - Asignar experto</h2>
 
-    <form method="POST">
+    <form method="post" action="{% url 'asignar_experto' solicitud.id %}">
+
         {% csrf_token %}
         <label>Nombre del experto:</label>
         <input type="text" name="experto_nombre" required>

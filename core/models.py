@@ -31,26 +31,6 @@ class Estado(models.Model):
 
 
 class SolicitudInformacion(models.Model):
-<<<<<<< HEAD
-=======
-    ESTADOS = [
-        ('no_revisada', 'Pendiente de revisión'),
-        ('revisada', 'En revisión'),
-        ('aceptada', 'Aceptada'),
-        ('en_ejecucion', 'En ejecución'),
-        ('rechazada', 'Rechazada'),
-        ('asignada', 'Experto asignado'),
-        ('cotizada', 'Cotización generada'),
-        ('enviada', 'Cotización enviada'),
-        ('mod_creada', 'Modificación: Creada'),
-        ('mod_en_revision', 'Modificación: En revisión'),
-        ('mod_aceptada', 'Modificación: Aceptada'),
-        ('mod_rechazada', 'Modificación: Rechazada'),
-        ('pago_inicial', 'Pago 50% Inicial'),
-        ('completado', 'Completado'),
-        ('pagada', 'Pagada'),
-    ]
->>>>>>> 084b0cd9ac34e6a8d9e97d0df0ea5ac13d506afe
 
     servicio = models.ForeignKey(
         Servicio,
@@ -131,7 +111,7 @@ class Presupuesto(models.Model):
         related_name='presupuesto'
     )
 
-    archivo = models.FileField(upload_to='presupuestos/')
+    archivo = models.FileField(upload_to='presupuestos/', null=True, blank=True)
     fecha = models.DateField(auto_now_add=True)
     total = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
 
